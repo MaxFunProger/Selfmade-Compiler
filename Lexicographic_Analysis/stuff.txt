@@ -1,0 +1,6 @@
+10
+if for while items range int char string booo double
+7
+{ } [ ] ( ) ;
+27
++ - = * / ! % div ^ > < ++ -- ** $= <= >= == || && += -= *= /= |= %= ^=
