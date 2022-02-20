@@ -1,4 +1,4 @@
-#include <vector>
+﻿#include <vector>
 #include <iostream>
 #include <algorithm>
 #include <string>
@@ -16,6 +16,13 @@ struct State {
 	std::string type;
 };
 
+struct Lex {
+	Lex(int type, std::string val) : type(type), val(val) {}
+	Lex() {}
+	int type;
+	std::string val;
+};
+
 std::set<std::string> stuff;
 std::set<std::string> operators;
 std::set<std::string> separators;
@@ -27,7 +34,16 @@ std::string text_queue = "";
 
 
 
-int main() {
+class Lexical {
+public:
+	Lexical();
+	Lex get_lex();
+private:
+	int index = -1;
+	std::vector<Lex> lexems;
+};
+
+Lexical::Lexical() {
 	std::ifstream file("stuff.txt");
 	std::ifstream mfile("machine.txt");
 	std::ifstream input("input.txt");
@@ -50,7 +66,7 @@ int main() {
 		operators.insert(st);
 	}
 
-	states.resize(30, nullptr);
+	states.resize(50, nullptr);
 
 	mfile >> n;
 	int id, term, id2, lex;
@@ -93,8 +109,10 @@ int main() {
 	for (int j = 0; j < text.size(); ++j) {
 		bool flag = false;
 		bool exit = false;
-		for (int i = 0; i < text[j].size() - 1; ++i) {
-
+		for (int i = 0; i < text[j].size(); ++i) {
+			/*if (text_queue == "return") {
+				int sdfg = 1;
+			}*/
 			if (text[j][i] == '/' && text[j][i + 1] == '/') {
 				prev = cur;
 				cur = states[0];
@@ -161,17 +179,47 @@ int main() {
 			}
 		}
 		if (exit) {
-			return 0;
+			std::cout << "Lex Error";
+			return;
 		}
 		if (flag) {
 			flag = false;
 			continue;
 		}
 	}
-	
+	lexems.push_back(Lex(result[cur->type], text_queue));
+
 	if (cur != nullptr && cur->is_terminal) {
 		std::cout << result[cur->type] << ' ' << text_queue << "\n";
 	}
+}
+
+Lex Lexical::get_lex() {
+	++index;
+	return lexems[index];
+}
+
+
+
+class Syntactical {
+public:
+	Syntactical();
+
+	
+private:
+	Lex lexem;
+	int t = lexem.type;
+	std::string c = lexem.val;
+};
+
+/*void Syntactical::Program() {
+	if (t == )
+}*/
+
+
+
+int main() {
+	Lexical* lex = new Lexical();
 
 	return 0;
 }

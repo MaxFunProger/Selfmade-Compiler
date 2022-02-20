@@ -1,6 +1,6 @@
-10
-if for while items range int char string booo double
+16
+if for while do int char string bool float true false break return continue void fun
 7
 { } [ ] ( ) ;
-27
-+ - = * / ! % div ^ > < ++ -- ** $= <= >= == || && += -= *= /= |= %= ^=
+30
++ - = * / ! % $ ^ > < ++ -- ** $= <= >= == += -= *= /= |= %= ^= && || | & &=
