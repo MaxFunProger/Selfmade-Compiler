@@ -18,16 +18,30 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Syntactical.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lexical.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="stuff.txt">
-      <Filter>Source Files</Filter>
+    <Text Include="input.txt">
+      <Filter>Resource Files</Filter>
     </Text>
     <Text Include="machine.txt">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="input.txt">
-      <Filter>Source Files</Filter>
+    <Text Include="stuff.txt">
+      <Filter>Resource Files</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Syntactical.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lexical.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

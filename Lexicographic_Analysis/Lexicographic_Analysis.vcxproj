@@ -139,12 +139,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Lexical.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Syntactical.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="input.txt" />
     <Text Include="machine.txt" />
     <Text Include="stuff.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Lexical.h" />
+    <ClInclude Include="Syntactical.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

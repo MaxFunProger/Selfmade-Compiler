@@ -1,5 +1,5 @@
-16
-if for while do int char string bool float true false break return continue void fun
+17
+if for while do int char string bool float true false break return continue void fun not
 7
 { } [ ] ( ) ;
 30
