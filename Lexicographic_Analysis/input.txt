@@ -1,8 +1,46 @@
-"qwert"'w'
-{a bsdf  } ***+++---__a 43 23 43aaaa_ int double  
-ewretryr eretryth retryt // ewretrytunh jrenv 234dfvf ABOBA
-ewretryt terytugfv rtvrb "eretrytu" 'w'
-while items range ABOBUS for if "drvee""wedfr"""
-int whiler = 0 while{}
-true false falser truer break breaker return return
-meow += -= *= &&& & && &= ^^ ^ ^= ^= =^= %% %= % and or orr andd || |||||
+int a, b, c = {1, 2, 3};
+
+fun int test(int a){
+	
+	a = {{{1, 2, 3}, {1, 2, 3}, 1, 2}, {1, 2, 3}, {1, 2, 3}};
+
+	func(a, b, lol(a, b, {{{1, 2}, 1, 2, 3}, {1, 2, 3}, {1, 2, 3}}));
+	break;
+	func();
+	do{
+		while (a < b){
+			for (i = 0; i < 10; ++i){
+				a = 10 - 1;
+				func();
+			}
+		}
+	} while (a < b);
+
+	for (;;){
+	}
+
+	while(a){
+	}
+}
+
+int a, b, c;
+
+fun int lala(int a, int b){
+	a = 52;
+	while (a < b){
+		a = b;
+		while (a < b){
+		}
+	}
+	for (;;++a){
+		cinout << 1 >> a >> b << 2;
+		for (i = 0; i < 10 + 1; ++i){
+			a = b;
+		}
+	}
+}
+
+fun int main(){
+	int a[100][100] = 100 + 10 - 15!! + 41 / 2 + (1 + 2) * not not (123 + 2**2), b = 1, k = 1 + 1 / 0;
+	int a = 15 * 15 - 10, b;
+}

@@ -66,6 +66,7 @@ Lexical::Lexical() {
 	for (int j = 0; j < text.size(); ++j) {
 		bool flag = false;
 		bool exit = false;
+		int cnt = 0;
 		for (int i = 0; i < text[j].size(); ++i) {
 			/*if (text_queue == "return") {
 				int sdfg = 1;
@@ -74,14 +75,23 @@ Lexical::Lexical() {
 				prev = cur;
 				cur = states[0];
 				if (prev != nullptr && prev->is_terminal) {
-					if (stuff.find(text_queue) == stuff.end())
-						std::cout << result[prev->type] << ' ' << text_queue << "\n";
+					if (stuff.find(text_queue) == stuff.end()) {
+						//std::cout << result[prev->type] << ' ' << text_queue << "\n";
+						lexems.push_back(Lex(result[prev->type], text_queue, j + 1));
+					}
 					else {
-						std::cout << 1 << ' ' << text_queue << "\n";
+						if (text_queue == "int" || text_queue == "char" || text_queue == "string" || text_queue == "bool" || text_queue == "float" || text_queue == "void") {
+							//std::cout << 8 << ' ' << text_queue << "\n";
+							lexems.push_back(Lex(8, text_queue, j + 1));
+						}
+						else {
+							//std::cout << 1 << ' ' << text_queue << "\n";
+							lexems.push_back(Lex(1, text_queue, j + 1));
+						}
 					}
 				}
 				if (prev != nullptr && prev != states[0] && !prev->is_terminal) {
-					std::cout << "ERROR" << ' ' << text_queue << "\n";
+					//std::cout << "ERROR" << ' ' << text_queue << "\n";
 					exit = true;
 					break;
 				}
@@ -95,14 +105,23 @@ Lexical::Lexical() {
 				prev = cur;
 				cur = states[0];
 				if (prev != nullptr && prev->is_terminal) {
-					if (stuff.find(text_queue) == stuff.end())
-						std::cout << result[prev->type] << ' ' << text_queue << "\n";
+					if (stuff.find(text_queue) == stuff.end()) {
+						//std::cout << result[prev->type] << ' ' << text_queue << "\n";
+						lexems.push_back(Lex(result[prev->type], text_queue, j + 1));
+					}
 					else {
-						std::cout << 1 << ' ' << text_queue << "\n";
+						if (text_queue == "int" || text_queue == "char" || text_queue == "string" || text_queue == "bool" || text_queue == "float" || text_queue == "void") {
+							//std::cout << 8 << ' ' << text_queue << "\n";
+							lexems.push_back(Lex(8, text_queue, j + 1));
+						}
+						else {
+							//std::cout << 1 << ' ' << text_queue << "\n";
+							lexems.push_back(Lex(1, text_queue, j + 1));
+						}
 					}
 				}
 				if (prev != nullptr && prev != states[0] && !prev->is_terminal) {
-					std::cout << "ERROR" << ' ' << text_queue << "\n";
+					//std::cout << "ERROR" << ' ' << text_queue << "\n";
 					exit = true;
 					break;
 				}
@@ -115,14 +134,23 @@ Lexical::Lexical() {
 			}
 			if (cur == nullptr) {
 				if (prev != nullptr && prev->is_terminal) {
-					if (stuff.find(text_queue) == stuff.end())
-						std::cout << result[prev->type] << ' ' << text_queue << "\n";
+					if (stuff.find(text_queue) == stuff.end()) {
+						//std::cout << result[prev->type] << ' ' << text_queue << "\n";
+						lexems.push_back(Lex(result[prev->type], text_queue, j + 1));
+					}
 					else {
-						std::cout << 1 << ' ' << text_queue << "\n";
+						if (text_queue == "int" || text_queue == "char" || text_queue == "string" || text_queue == "bool" || text_queue == "float" || text_queue == "void") {
+							//std::cout << 8 << ' ' << text_queue << "\n";
+							lexems.push_back(Lex(8, text_queue, j + 1));
+						}
+						else {
+							//std::cout << 1 << ' ' << text_queue << "\n";
+							lexems.push_back(Lex(1, text_queue, j + 1));
+						}
 					}
 				}
 				if (prev != nullptr && prev != states[0] && !prev->is_terminal) {
-					std::cout << "ERROR" << ' ' << text_queue << "\n";
+					//std::cout << "ERROR" << ' ' << text_queue << "\n";
 					exit = true;
 					break;
 				}
@@ -136,7 +164,7 @@ Lexical::Lexical() {
 			}
 		}
 		if (exit) {
-			std::cout << "Lex Error";
+			std::cout << "Lexical Error";
 			return;
 		}
 		if (flag) {
@@ -144,17 +172,18 @@ Lexical::Lexical() {
 			continue;
 		}
 	}
-	if (text_queue == "int" || text_queue == "char" || text_queue == "string" || text_queue == "bool" || text_queue == "float" || text_queue == "void")
-		lexems.push_back(Lex(8, text_queue));
-	else
-		lexems.push_back(Lex(result[cur->type], text_queue));
 
 	if (cur != nullptr && cur->is_terminal) {
-		if (text_queue == "int" || text_queue == "char" || text_queue == "string" || text_queue == "bool" || text_queue == "float" || text_queue == "void")
-			std::cout << 8 << ' ' << text_queue << "\n";
-		else
-			std::cout << result[cur->type] << ' ' << text_queue << "\n";
+		if (text_queue == "int" || text_queue == "char" || text_queue == "string" || text_queue == "bool" || text_queue == "float" || text_queue == "void") {
+			//std::cout << 8 << ' ' << text_queue << "\n";
+			lexems.push_back(Lex(8, text_queue, text.size()));
+		}
+		else {
+			//std::cout << result[cur->type] << ' ' << text_queue << "\n";
+			lexems.push_back(Lex(result[cur->type], text_queue, text.size()));
+		}
 	}
+	std::cout << "Lexems: OK" << "\n";
 }
 
 Lex Lexical::get_lex() {

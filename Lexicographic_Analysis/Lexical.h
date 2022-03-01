@@ -15,10 +15,18 @@ struct State {
 };
 
 struct Lex {
-	Lex(int type, std::string val) : type(type), val(val) {}
-	Lex() : type(-1), val("") {}
+	Lex(int type, std::string val, int str_number) 
+		: type(type)
+		, val(val)
+		, str_number(str_number) {}
+	Lex() 
+		: type(-1)
+		, val("")
+		, str_number(-1) {}
 	int type;
 	std::string val;
+
+	int str_number;
 };
 
 class Lexical {

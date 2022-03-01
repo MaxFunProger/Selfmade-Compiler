@@ -1,7 +1,13 @@
 #include "Syntactical.h"
 
 Syntactical::Syntactical(Lexical* lex) : lex_(lex), lexem_(Lex()), type_(lexem_.type), val_(lexem_.val) {
-	Program();
+	try {
+		Program();
+		std::cout << "Syntax: OK" << "\n";
+	}
+	catch (ErrorSynt err) {
+		err.display();
+	}
 }
 
 void Syntactical::gl() {
@@ -20,11 +26,12 @@ void Syntactical::Program() {
 		if (val_ == "fun") {
 			gl();
 			if (type_ == 8) {
+				std::string tmp = val_;
 				gl();
 				if (val_ != "main" && type_ == 2) {
 					FuncDeclaration();
 				}
-				else if (val_ == "main") {
+				else if (val_ == "main" && tmp == "int") {
 					gl();
 					if (val_ == "(") {
 						gl();
@@ -33,19 +40,19 @@ void Syntactical::Program() {
 							return;
 						}
 						else {
-							throw; // ')' expected
+							throw ErrorSynt(lexem_.str_number, val_, ")"); // ')' expected
 						}
 					}
 					else {
-						throw; // '(' expected
+						throw ErrorSynt(lexem_.str_number, val_, "("); // '(' expected
 					}
 				}
 				else {
-					throw; // name expected
+					throw  ErrorSynt(lexem_.str_number, val_, "indentificator"); // name expected
 				}
 			}
 			else {
-				throw; // type expected
+				throw  ErrorSynt(lexem_.str_number, val_, "type"); // type expected
 			}
 		}
 		else if (type_ == 8) {
@@ -53,7 +60,7 @@ void Syntactical::Program() {
 			Declaration();
 		}
 		else {
-			throw; // expected declaration of func/variable
+			throw  ErrorSynt(lexem_.str_number, val_, "declaration"); // expected declaration of func/variable
 		}
 	}
 }
@@ -65,7 +72,7 @@ void Syntactical::FuncDeclaration() {
 		Block();
 	}
 	else {
-		throw; // '(' expected
+		throw  ErrorSynt(lexem_.str_number, val_, "("); // '(' expected
 	}
 }
 
@@ -78,7 +85,16 @@ void Syntactical::Declaration() {
 			return;
 		}
 		else {
-			throw; // expected ';'
+			if (val_ != ",") {
+				throw  ErrorSynt(lexem_.str_number, val_, ", or ;"); // expected "," || ";"
+			}
+			while (val_ == ",") {
+				Section();
+				gl();
+			}
+			if (val_ != ";") {
+				throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ";"
+			}
 		}
 	}
 	else {
@@ -88,115 +104,140 @@ void Syntactical::Declaration() {
 
 void Syntactical::Section() {
 	gl();
-	if (type_ == 8) {
+	if (type_ == 2) {
 		gl();
-		if (type_ == 2) {
-			gl();
-			if (val_ == "[") {
-				low();
-				while (true) {
-					gl();
-					if (val_ == "[") {
-						gl();
-						if (val_ == "int") {
-							gl();
-							if (val_ == "]") {
-								continue;
-							}
-							else {
-								throw; // expected ']'
-							}
-						}
-						else {
-							throw; // expected int
-						}
-					}
-					else {
-						low();
-						break;
-					}
-				}
+		if (val_ == "[") {
+			low();
+			while (true) {
 				gl();
-				if (val_ == "=") {
+				if (val_ == "[") {
+					Expression();
 					gl();
-					if (val_ == "{") {
-						Array();
-						gl();
-						if (val_ == ",") {
-							Section();
-						}
-						else if (val_ == ";") {
-							return;
-						}
-						else {
-							throw; // expected ';' or ','
-						}
+					if (val_ == "]") {
+						continue;
 					}
 					else {
-						low();
-						Expression();
+						throw  ErrorSynt(lexem_.str_number, val_, "]"); // expected ']'
 					}
-				}
-				else if (val_ == ";") {
-					return;
 				}
 				else {
-					throw; // expected ';'
+					low();
+					break;
 				}
 			}
-			else if (val_ == "=") {
-				Expression();
+			gl();
+			if (val_ == "=") {
+				gl();
+				if (val_ == "{") {
+					Array();
+					gl();
+					if (val_ == ";" || val_ == ",") {
+						low();
+						return;
+					}
+					else {
+						throw  ErrorSynt(lexem_.str_number, val_, ", or ;"); // expected ';' or ','
+					}
+				}
+				else {
+					low();
+					Expression();
+				}
 			}
-			else if (val_ == ";") {
+			else if (val_ == ";" || val_ == ",") {
+				low();
 				return;
 			}
 			else {
-				throw; // expected ";"
+				throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ';'
 			}
 		}
+		else if (val_ == "=") {
+			Expression();
+		}
+		else if (val_ == ";" || val_ == ",") {
+			low();
+			return;
+		}
 		else {
-			throw; // expected name
+			throw  ErrorSynt(lexem_.str_number, val_, ", or ;"); // expected ";" or ","
 		}
 	}
 	else {
-		throw; // expected type
+		throw  ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
 	}
 }
 
 void Syntactical::Block() {
 	gl();
 	if (val_ == "{") {
-		Operator();
 		gl();
 		if (val_ == "}") {
 			return;
 		}
 		else {
-			throw; // expected '}'
+			low();
+		}
+		while (val_ != "}") {
+			Operator();
+			gl();
+			if (val_ != "}")
+				low();
+		}
+		if (val_ == "}") {
+			return;
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, "}"); // expected '}'
 		}
 	}
 	else {
-		throw; // expected '{'
+		throw  ErrorSynt(lexem_.str_number, val_, "{"); // expected '{'
 	}
 }
 
 void Syntactical::Operator() {
 	
 	gl();
+	if (val_ == ";")
+		return;
 	if (type_ == 8) {
 		low();
-		Declaration();
+		Declaration(); // eats ;
 	}
 	else if (val_ == "cinout") {
 		low();
 		InOut();
+		gl();
+		if (val_ == ";") {
+			return;
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ;
+		}
 	}
 	else if (val_ == "break" || val_ == "continue" || val_ == "return") {
-		return;
+		gl();
+		if (val_ == ";") {
+			return;
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ";"
+		}
+	}
+	else if (val_ == "for" || val_ == "while" || val_ == "do" || val_ == "if") {
+		DerivedOperator();
 	}
 	else {
 		low();
 		Expression();
+		gl();
+		if (val_ == ";") {
+			return;
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ;
+		}
 	}
 
 
@@ -209,47 +250,17 @@ void Syntactical::InOut() {
 		ListInOut();
 	}
 	else {
-		throw; // expected cinout
+		throw  ErrorSynt(lexem_.str_number, val_, "cinout"); // expected cinout
 	}
 }
 
 void Syntactical::ListInOut() {
 	gl();
-	if (val_ == ">>") {
+	while (val_ == ">>" || val_ == "<<") {
+		Expression();
 		gl();
-		if (type_ == 2) {
-			gl();
-			if (val_ == ";") {
-				return;
-			}
-			else {
-				throw; //expected ';'
-			}
-		}
-		else {
-			throw; // expected name (variable)
-		}
 	}
-	else if (val_ == "<<") {
-		gl();
-		if (type_ == 2) {
-			gl();
-			if (val_ == ";") {
-				return;
-			}
-			else {
-				low(2);
-				Expression();
-			}
-		}
-		else {
-			low();
-			Expression();
-		}
-	}
-	else {
-		throw; // expected ">>" or "<<"
-	}
+	low();
 }
 
 void Syntactical::DerivedOperator() {
@@ -294,11 +305,11 @@ void Syntactical::If() {
 			}
 		}
 		else {
-			throw; // expected ')'
+			throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 		}
 	}
 	else {
-		throw; // expected '('
+		throw  ErrorSynt(lexem_.str_number, val_, "("); // expected '('
 	}
 }
 
@@ -311,11 +322,11 @@ void Syntactical::While() {
 			Block();
 		}
 		else {
-			throw; // expected ')'
+			throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 		}
 	}
 	else {
-		throw; // expected '('
+		throw  ErrorSynt(lexem_.str_number, val_, "("); // expected '('
 	}
 }
 
@@ -333,19 +344,19 @@ void Syntactical::DoWhile() {
 					return;
 				}
 				else {
-					throw; // expected ';'
+					throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ';'
 				}
 			}
 			else {
-				throw; // expected ')'
+				throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 			}
 		}
 		else {
-			throw; // expected '('
+			throw  ErrorSynt(lexem_.str_number, val_, "("); // expected '('
 		}
 	}
 	else {
-		throw; // expected while operator
+		throw  ErrorSynt(lexem_.str_number, val_, "while"); // expected while operator
 	}
 }
 
@@ -356,49 +367,44 @@ void Syntactical::For() {
 		if (type_ == 8) {
 			low();
 			Declaration();
+			Operator();
+			gl();
+			if (val_ == ")") {
+				Block();
+				return;
+			}
+			low();
 			Expression();
 			gl();
-			if (val_ == ";") {
-				Expression();
-				gl();
-				if (val_ == ")") {
-					Block();
-				}
-				else {
-					throw; // expected ')'
-				}
+			if (val_ == ")") {
+				Block();
 			}
 			else {
-				throw; // expected ';'
+				throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 			}
 		}
 		else {
+			low();
+			Operator();
+			Operator();
+			gl();
+			if (val_ == ")") {
+				Block();
+				return;
+			}
+			low();
 			Expression();
 			gl();
-			if (val_ == ";") {
-				Expression();
-				gl();
-				if (val_ == ";") {
-					Expression();
-					gl();
-					if (val_ == ")") {
-						Block();
-					}
-					else {
-						throw; // expected ')'
-					}
-				}
-				else {
-					throw; // expected ';'
-				}
+			if (val_ == ")") {
+				Block();
 			}
 			else {
-				throw; // expected ';'
+				throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 			}
 		}
 	}
 	else {
-		throw; // expected '('
+		throw  ErrorSynt(lexem_.str_number, val_, "("); // expected '('
 	}
 }
 
@@ -411,145 +417,116 @@ void Syntactical::FuncCall() {
 			return;
 		}
 		else {
-			throw; // expected ')'
+			throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 		}
 	}
 	else {
-		throw; // expected '('
+		throw  ErrorSynt(lexem_.str_number, val_, "("); // expected '('
 	}
 }
 
 void Syntactical::Parameters() {
 	gl();
-	if (type_ == 2) {
-		gl();
-		if (val_ == "(") {
-			low();
-			FuncCall();
-			gl();
-			if (val_ == ",") {
-				Parameters();
-			}
-			else if (val_ == ")") {
-				low();
-				return;
-			}
-			else {
-				throw; // expected "," or ")"
-			}
+	while (true) {
+		if (type_ == 2) {
+			Variable();
 		}
-		else {
-			low(2);
-			Expression();
-			gl();
-			if (val_ == ",") {
-				Parameters();
-			}
-			else if (val_ == ")") {
+		else if (type_ == 3 || val_ == "{") {
+			if (val_ == "{") {
 				low();
-				return;
 			}
-			else {
-				throw; // expected "," or ")"
-			}
-		}
-	}
-	else if (val_ == ")") {
-		low();
-		return;
-	}
-	else {
-		Expression();
-		gl();
-		if (val_ == ",") {
-			Parameters();
+			Value();
 		}
 		else if (val_ == ")") {
 			low();
 			return;
 		}
 		else {
-			throw; // expected "," or ")"
+			throw  ErrorSynt(lexem_.str_number, val_, "identificator or value"); // expected variable or value
+		}
+		gl();
+		if (val_ == ",") {
+			gl();
+			if (type_ != 2 && type_ != 3 && val_ != "{") {
+				throw  ErrorSynt(lexem_.str_number, val_, "identificator or value"); // expected variable or value
+			}
+		}
+		else {
+			low();
+			break;
 		}
 	}
 }
 
 void Syntactical::DecFuncParameters() {
 	gl();
-	if (type_ == 8) {
-		Variable();
+	while (type_ == 8) {
+		gl();
+		if (type_ == 2) {
+			Variable();
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
+		}
+		gl();
+		if (val_ == ",") {
+			gl();
+		}
 	}
-	else if (val_ == ")") {
+	if (val_ == ")") {
 		return;
 	}
 	else {
-		throw; // expected ')'
+		throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 	}
 }
 
 void Syntactical::Array() {
 	gl();
-	if (val_ == "}") {
-		return;
-	}
-	else if (val_ == "{") {
+	std::string prev = ",";
+	while (val_ == "{") {
 		Array();
 		gl();
+		if (val_ != "," && val_ != "}") {
+			throw;
+		}
 		if (val_ == ",") {
 			gl();
-			if (val_ == "}") {
-				return;
-			}
-			else if (val_ == "{") {
-				Array();
-			}
-			else {
-				throw; // expected '}' or '{'
-			}
-		}
-		else if (val_ == "}") {
-			return;
 		}
 		else {
-			throw; // expected '}' or '{'
+			return;
 		}
 	}
-	else if (type_ == 8) {
-		gl();
-		while (val_ == ",") {
+	while (type_ == 3 || val_ == ",") {
+		if (type_ == 3 && prev == ",") {
+			prev = val_;
 			gl();
-			if (type_ == 8) {
-				gl();
-			}
-			else if (val_ != "}" && type_ != 8) {
-				throw; // expected '}'
-			}
-			else if (val_ == "}") {
-				return;
-			}
 		}
-
+		else if (val_ == "," && prev != ",") {
+			prev = val_;
+			gl();
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, "value or ,");
+		}
 	}
-	else {
-		throw; // expected '}' or '{'
+	if (prev == ",") {
+		throw  ErrorSynt(lexem_.str_number, val_, "value or }");
 	}
+	if (val_ != "}") {
+		throw  ErrorSynt(lexem_.str_number, val_, "}"); // expected }
+	}
+	return;
 }
 
 void Syntactical::Expression() {
+	Atom10();
 	gl();
-	if (type_ == 2) {
-		low();
-		Variable();
+	while (Priority10(val_)) {
+		Atom10();
 		gl();
-		while (Priority10(val_)) {
-			Atom10();
-			gl();
-		}
-		low();
 	}
-	else {
-		throw; // expected variable
-	}
+	low();
 }
 
 bool Syntactical::Priority1(std::string st) {
@@ -580,7 +557,6 @@ bool Syntactical::Priority3(std::string st) {
 }
 
 bool Syntactical::Priority4(std::string st) {
-	gl();
 	if (st == "*" || st == "/" || st == "%" || st == "$") {
 		return true;
 	}
@@ -656,7 +632,6 @@ bool Syntactical::PriorityNot(std::string st) {
 void Syntactical::Atom1() {
 	gl();
 	if (type_ == 2) {
-		low();
 		Variable();
 	}
 	else if (val_ == "(") {
@@ -666,13 +641,11 @@ void Syntactical::Atom1() {
 			return;
 		}
 		else {
-			throw; // expected ')'
+			throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 		}
 	}
-	else if (val_ == "not") {
-		Expression();
-	}
 	else {
+		low();
 		Value();
 	}
 }
@@ -695,7 +668,7 @@ void Syntactical::Atom3() {
 	low();
 }
 
-void Syntactical::Atom4() {
+void Syntactical::AtomNot() {
 	Atom3();
 	gl();
 	while (Priority3(val_)) {
@@ -705,20 +678,20 @@ void Syntactical::Atom4() {
 	low();
 }
 
-void Syntactical::AtomNot() {
+void Syntactical::Atom4() {
 	gl();
-	while (Priority4(val_)) {
+	while (PriorityNot(val_)) {
 		gl();
 	}
 	low();
-	Atom4();
+	AtomNot();	
 }
 
 void Syntactical::Atom5() {
-	AtomNot();
+	Atom4();
 	gl();
-	while (PriorityNot(val_)) {
-		AtomNot();
+	while (Priority4(val_)) {
+		Atom4();
 		gl();
 	}
 	low();
@@ -772,4 +745,58 @@ void Syntactical::Atom10() {
 		gl();
 	}
 	low();
+}
+
+void Syntactical::Stopper() {
+	gl();
+	if (val_ == "break" || val_ == "continue" || val_ == "return") {
+		return;
+	}
+	else {
+		throw  ErrorSynt(lexem_.str_number, val_, "return, break or continue"); // expected stopper
+	}
+}
+
+void Syntactical::Variable() {
+	gl();
+	if (val_ == "(") {
+		low();
+		FuncCall();
+		return;
+	}
+	while (val_ == "[") {
+		Expression();
+		gl();
+		if (val_ == "]") {
+			gl();
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, "]"); // expected "]"
+		}
+	}
+	low();
+}
+
+void Syntactical::Value() {
+	gl();
+	if (val_ == "{") {
+		Array();
+	}
+	else if (type_ == 3) {
+		return;
+	}
+	else if (type_ == 4) {
+		gl();
+		if (val_ == "(") {
+			low();
+			FuncCall();
+		}
+		else {
+			low();
+			Variable();
+		}
+	}
+	else {
+		throw  ErrorSynt(lexem_.str_number, val_, "value"); // unexpected value
+	}
 }

@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ErrorSynt.cpp" />
     <ClCompile Include="Lexical.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Syntactical.cpp" />
@@ -149,6 +150,7 @@
     <Text Include="stuff.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorSynt.h" />
     <ClInclude Include="Lexical.h" />
     <ClInclude Include="Syntactical.h" />
   </ItemGroup>

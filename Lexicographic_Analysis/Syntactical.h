@@ -1,5 +1,6 @@
 #pragma once
 #include "Lexical.h"
+#include "ErrorSynt.h"
 
 class Syntactical {
 public:
