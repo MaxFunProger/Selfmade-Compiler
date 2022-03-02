@@ -425,7 +425,7 @@ void Syntactical::FuncCall() {
 	}
 }
 
-void Syntactical::Parameters() {
+/*void Syntactical::Parameters() {
 	gl();
 	while (true) {
 		if (type_ == 2) {
@@ -456,7 +456,38 @@ void Syntactical::Parameters() {
 			break;
 		}
 	}
+}*/
+
+
+void Syntactical::Parameters() {
+	gl();
+	while (true) {
+		if (val_ != ")") {
+			low();
+			Expression();
+		}
+		else if (val_ == ")") {
+			low();
+			return;
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, "identificator or value"); // expected variable or value
+		}
+		gl();
+		if (val_ == ",") {
+			gl();
+			if (type_ != 2 && type_ != 3 && val_ != "{") {
+				throw  ErrorSynt(lexem_.str_number, val_, "identificator or value"); // expected variable or value
+			}
+		}
+		else {
+			low();
+			break;
+		}
+	}
 }
+
+
 
 void Syntactical::DecFuncParameters() {
 	gl();
