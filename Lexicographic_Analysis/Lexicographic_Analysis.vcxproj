@@ -139,20 +139,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ErrorSemant.cpp" />
     <ClCompile Include="ErrorSynt.cpp" />
     <ClCompile Include="Lexical.cpp" />
+    <ClCompile Include="Semantical.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Syntactical.cpp" />
+    <ClCompile Include="TID.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="input.txt" />
     <Text Include="machine.txt" />
+    <Text Include="opers_types.txt" />
     <Text Include="stuff.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorSemant.h" />
     <ClInclude Include="ErrorSynt.h" />
     <ClInclude Include="Lexical.h" />
+    <ClInclude Include="Semantical.h" />
     <ClInclude Include="Syntactical.h" />
+    <ClInclude Include="TID.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

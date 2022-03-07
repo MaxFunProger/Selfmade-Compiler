@@ -2,5 +2,5 @@
 if for while do int char string bool float true false break return continue void fun not
 7
 { } [ ] ( ) ;
-30
-+ - = * / ! % $ ^ > < ++ -- ** $= <= >= == += -= *= /= |= %= ^= && || | & &=
+29
++ - = * / ! % ^ > < ++ -- ** <= >= == += -= *= /= |= %= ^= && || | & &= !=

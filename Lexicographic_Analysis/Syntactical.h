@@ -1,6 +1,9 @@
 #pragma once
 #include "Lexical.h"
 #include "ErrorSynt.h"
+#include "TID.h"
+#include "Semantical.h"
+#include "ErrorSemant.h"
 
 class Syntactical {
 public:
@@ -62,6 +65,11 @@ public:
 	void Atom10();
 	void AtomNot();
 	void Array();
+	void clear();
+	void check_op(int);
+	void push(std::string);
+	std::string pop();
+	int check_ind();
 
 private:
 	Lexical* lex_;
@@ -70,4 +78,10 @@ private:
 	void low(int);
 	int& type_;
 	std::string& val_;
+	TIDOperator* oper_;
+	ExpChecker* checker_;
+	std::string nameo_, typeo_, typev_, namev_;
+	std::vector<std::pair<std::string, std::string> > params_;
+	std::vector<std::string> stack_;
+	std::set<std::string> ops_;
 };

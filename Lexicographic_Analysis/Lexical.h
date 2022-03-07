@@ -36,7 +36,7 @@ public:
 	void low();
 	int get_index();
 	void set_index(int);
-private:
+
 	int index = -1;
 	std::vector<Lex> lexems;
 

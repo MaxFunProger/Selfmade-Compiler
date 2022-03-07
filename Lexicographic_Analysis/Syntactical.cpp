@@ -1,13 +1,57 @@
 #include "Syntactical.h"
+#include "Semantical.h"
 
 Syntactical::Syntactical(Lexical* lex) : lex_(lex), lexem_(Lex()), type_(lexem_.type), val_(lexem_.val) {
 	try {
+		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<", "**", "<=", ">=", "==", "+=", "-=", "*=", "/=", "|=", "%=", "^=", "&&", "||", "|", "&&", "=", "!=" };
+		oper_ = new TIDOperator();
+		oper_->cur = new Local_TID(nullptr);
+
 		Program();
 		std::cout << "Syntax: OK" << "\n";
 	}
 	catch (ErrorSynt err) {
 		err.display();
 	}
+	catch (ErrorSemant err) {
+		err.display();
+	}
+}
+
+void Syntactical::check_op(int ch) {
+	if (!ch) {
+		return;
+	}
+	std::string op2 = pop();
+	std::string sign = pop();
+	if (sign != "++" && sign != "--" && sign != "!"){
+		std::string op1 = pop();
+		checker_->check_op(sign, op1, op2);
+	}
+	else {
+		checker_->check_op(sign, op2);
+	}
+}
+
+void Syntactical::push(std::string op) {
+	stack_.push_back(op);
+}
+
+int Syntactical::check_ind() {
+	int sz = stack_.size();
+	if (sz == 1) {
+		return 0;
+	}
+	if (find(ops_.begin(), ops_.end(), stack_[sz - 2]) != ops_.end()) {
+		return 1;
+	}
+	return 0;
+}
+
+std::string Syntactical::pop() {
+	std::string tmp = stack_.back();
+	stack_.pop_back();
+	return tmp;
 }
 
 void Syntactical::gl() {
@@ -19,6 +63,10 @@ void Syntactical::low(int cnt = 1) {
 		lex_->low();
 }
 
+void Syntactical::clear() {
+	params_.clear();
+}
+
 
 void Syntactical::Program() {
 	while (true) {
@@ -27,7 +75,9 @@ void Syntactical::Program() {
 			gl();
 			if (type_ == 8) {
 				std::string tmp = val_;
+				typeo_ = lex_->lexems[lex_->index].val;
 				gl();
+				nameo_ = lex_->lexems[lex_->index].val;
 				if (val_ != "main" && type_ == 2) {
 					FuncDeclaration();
 				}
@@ -36,6 +86,9 @@ void Syntactical::Program() {
 					if (val_ == "(") {
 						gl();
 						if (val_ == ")") {
+							oper_->cur->push_func(Func(typeo_, nameo_, params_), 0);
+							oper_->down();
+							oper_->cur->push_func(Func(typeo_, nameo_, params_), 1);
 							Block();
 							return;
 						}
@@ -59,6 +112,9 @@ void Syntactical::Program() {
 			low();
 			Declaration();
 		}
+		else if (type_ == -1) {
+			return;
+		}
 		else {
 			throw  ErrorSynt(lexem_.str_number, val_, "declaration"); // expected declaration of func/variable
 		}
@@ -69,6 +125,9 @@ void Syntactical::FuncDeclaration() {
 	gl();
 	if (val_ == "(") {
 		DecFuncParameters(); // also reads ')'
+		oper_->cur->push_func(Func(typeo_, nameo_, params_), 0);
+		oper_->down();
+		oper_->cur->push_func(Func(typeo_, nameo_, params_), 1);
 		Block();
 	}
 	else {
@@ -79,6 +138,7 @@ void Syntactical::FuncDeclaration() {
 void Syntactical::Declaration() {
 	gl();
 	if (type_ == 8) {
+		typev_ = lex_->lexems[lex_->index].val;
 		Section();
 		gl();
 		if (val_ == ";") {
@@ -104,6 +164,7 @@ void Syntactical::Declaration() {
 
 void Syntactical::Section() {
 	gl();
+	namev_ = lex_->lexems[lex_->index].val;
 	if (type_ == 2) {
 		gl();
 		if (val_ == "[") {
@@ -111,9 +172,11 @@ void Syntactical::Section() {
 			while (true) {
 				gl();
 				if (val_ == "[") {
+					typev_.push_back('[');
 					Expression();
 					gl();
 					if (val_ == "]") {
+						typev_.push_back(']');
 						continue;
 					}
 					else {
@@ -125,6 +188,10 @@ void Syntactical::Section() {
 					break;
 				}
 			}
+			oper_->cur->push_var(Var(typev_, namev_));
+			clear();
+
+
 			gl();
 			if (val_ == "=") {
 				gl();
@@ -152,15 +219,19 @@ void Syntactical::Section() {
 				throw  ErrorSynt(lexem_.str_number, val_, ";"); // expected ';'
 			}
 		}
-		else if (val_ == "=") {
-			Expression();
-		}
-		else if (val_ == ";" || val_ == ",") {
-			low();
-			return;
-		}
 		else {
-			throw  ErrorSynt(lexem_.str_number, val_, ", or ;"); // expected ";" or ","
+			oper_->cur->push_var(Var(typev_, namev_));
+			clear();
+			if (val_ == "=") {
+				Expression();
+			}
+			else if (val_ == ";" || val_ == ",") {
+				low();
+				return;
+			}
+			else {
+				throw  ErrorSynt(lexem_.str_number, val_, ", or ;"); // expected ";" or ","
+			}
 		}
 	}
 	else {
@@ -173,6 +244,7 @@ void Syntactical::Block() {
 	if (val_ == "{") {
 		gl();
 		if (val_ == "}") {
+			oper_->up();
 			return;
 		}
 		else {
@@ -185,6 +257,7 @@ void Syntactical::Block() {
 				low();
 		}
 		if (val_ == "}") {
+			oper_->up();
 			return;
 		}
 		else {
@@ -294,9 +367,11 @@ void Syntactical::If() {
 		Expression();
 		gl();
 		if (val_ == ")") {
+			oper_->down();
 			Block();
 			gl();
 			if (val_ == "else") {
+				oper_->down();
 				Block();
 			}
 			else {
@@ -319,6 +394,7 @@ void Syntactical::While() {
 		Expression();
 		gl();
 		if (val_ == ")") {
+			oper_->down();
 			Block();
 		}
 		else {
@@ -331,6 +407,7 @@ void Syntactical::While() {
 }
 
 void Syntactical::DoWhile() {
+	oper_->down();
 	Block();
 	gl();
 	if (val_ == "while") {
@@ -362,6 +439,7 @@ void Syntactical::DoWhile() {
 
 void Syntactical::For() {
 	gl();
+	oper_->down();
 	if (val_ == "(") {
 		gl();
 		if (type_ == 8) {
@@ -492,12 +570,15 @@ void Syntactical::Parameters() {
 void Syntactical::DecFuncParameters() {
 	gl();
 	while (type_ == 8) {
+		typev_ = lex_->lexems[lex_->index].val;
 		gl();
 		if (type_ == 2) {
+			namev_ = lex_->lexems[lex_->index].val;
+			params_.push_back(std::make_pair(typev_, namev_));
 			Variable();
 		}
 		else {
-			throw  ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
+			throw ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
 		}
 		gl();
 		if (val_ == ",") {
@@ -508,7 +589,7 @@ void Syntactical::DecFuncParameters() {
 		return;
 	}
 	else {
-		throw  ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
+		throw ErrorSynt(lexem_.str_number, val_, ")"); // expected ')'
 	}
 }
 
@@ -538,11 +619,11 @@ void Syntactical::Array() {
 			gl();
 		}
 		else {
-			throw  ErrorSynt(lexem_.str_number, val_, "value or ,");
+			throw ErrorSynt(lexem_.str_number, val_, "value or ,");
 		}
 	}
 	if (prev == ",") {
-		throw  ErrorSynt(lexem_.str_number, val_, "value or }");
+		throw ErrorSynt(lexem_.str_number, val_, "value or }");
 	}
 	if (val_ != "}") {
 		throw  ErrorSynt(lexem_.str_number, val_, "}"); // expected }
@@ -562,6 +643,7 @@ void Syntactical::Expression() {
 
 bool Syntactical::Priority1(std::string st) {
 	if (st == "++" || st == "--") {
+		push(st);
 		return true;
 	}
 	else {
@@ -571,6 +653,7 @@ bool Syntactical::Priority1(std::string st) {
 
 bool Syntactical::Priority2(std::string st) {
 	if (st == "!") {
+		push(st);
 		return true;
 	}
 	else {
@@ -580,6 +663,7 @@ bool Syntactical::Priority2(std::string st) {
 
 bool Syntactical::Priority3(std::string st) {
 	if (st == "**") {
+		push(st);
 		return true;
 	}
 	else {
@@ -589,6 +673,7 @@ bool Syntactical::Priority3(std::string st) {
 
 bool Syntactical::Priority4(std::string st) {
 	if (st == "*" || st == "/" || st == "%" || st == "$") {
+		push(st);
 		return true;
 	}
 	else {
@@ -598,6 +683,7 @@ bool Syntactical::Priority4(std::string st) {
 
 bool Syntactical::Priority5(std::string st) {
 	if (st == "+" || st == "-") {
+		push(st);
 		return true;
 	}
 	else {
@@ -607,6 +693,7 @@ bool Syntactical::Priority5(std::string st) {
 
 bool Syntactical::Priority6(std::string st) {
 	if (st == "^" || st == "|" || st == "&") {
+		push(st);
 		return true;
 	}
 	else {
@@ -616,6 +703,7 @@ bool Syntactical::Priority6(std::string st) {
 
 bool Syntactical::Priority7(std::string st) {
 	if (st == "<" || st == ">" || st == "<=" || st == ">=" || st == "==" || st == "!=") {
+		push(st);
 		return true;
 	}
 	else {
@@ -625,6 +713,7 @@ bool Syntactical::Priority7(std::string st) {
 
 bool Syntactical::Priority8(std::string st) {
 	if (st == "&&") {
+		push(st);
 		return true;
 	}
 	else {
@@ -634,6 +723,7 @@ bool Syntactical::Priority8(std::string st) {
 
 bool Syntactical::Priority9(std::string st) {
 	if (st == "||") {
+		push(st);
 		return true;
 	}
 	else {
@@ -644,6 +734,7 @@ bool Syntactical::Priority9(std::string st) {
 bool Syntactical::Priority10(std::string st) {
 	if (st == "=" || st == "+=" || st == "-=" || st == "*=" || st == "/="
 		|| st == "%=" || st == "^=" || st == "$=" || st == "**=" || st == "&=" || st == "|=") {
+		push(st);
 		return true;
 	}
 	else {
@@ -663,6 +754,13 @@ bool Syntactical::PriorityNot(std::string st) {
 void Syntactical::Atom1() {
 	gl();
 	if (type_ == 2) {
+		if (oper_->cur->find_var_all(lex_->lexems[lex_->index].val) == "none") {
+			gl();
+			if (val_ != "(") {
+				throw ErrorSemant(lexem_.str_number, "undefined variable"); // undefined variable
+			}
+			low();
+		}
 		Variable();
 	}
 	else if (val_ == "(") {
@@ -789,22 +887,30 @@ void Syntactical::Stopper() {
 }
 
 void Syntactical::Variable() {
+	namev_ = lex_->lexems[lex_->index].val;
 	gl();
 	if (val_ == "(") {
 		low();
+		if (oper_->cur->find_func_all(namev_) == "none") {
+			throw ErrorSemant(lexem_.str_number, "undefined function");; // undefined function
+		}
 		FuncCall();
 		return;
 	}
 	while (val_ == "[") {
 		Expression();
 		gl();
+		typev_.push_back('[');
 		if (val_ == "]") {
+			typev_.push_back(']');
 			gl();
 		}
 		else {
 			throw  ErrorSynt(lexem_.str_number, val_, "]"); // expected "]"
 		}
 	}
+	//push(oper_->get_type_var(namev_));
+	//check_op(check_ind());
 	low();
 }
 
@@ -814,16 +920,39 @@ void Syntactical::Value() {
 		Array();
 	}
 	else if (type_ == 3) {
+		if (find(val_.begin(), val_.end(), '"') != val_.end()) {
+			push("string");
+		}
+		else if (find(val_.begin(), val_.end(), '\'') != val_.end()) {
+			push("char");
+		}
+		else if (find(val_.begin(), val_.end(), '.') != val_.end()) {
+			push("float");
+		}
+		else if (val_ == "true" || val_ == "false") {
+			push("bool");
+		}
+		else {
+			push("int");
+		}
+		//check_op(check_ind());
 		return;
 	}
 	else if (type_ == 4) {
+		namev_ = lex_->lexems[lex_->index].val;
 		gl();
 		if (val_ == "(") {
 			low();
+			if (oper_->cur->find_func_all(namev_) == "none") {
+				throw ErrorSemant(lexem_.str_number, "undefined function");; // undefined function
+			}
 			FuncCall();
 		}
 		else {
 			low();
+			if (oper_->cur->find_var_all(namev_) == "none") {
+				throw ErrorSemant(lexem_.str_number, "undefined variable");; // undefined variable
+			}
 			Variable();
 		}
 	}

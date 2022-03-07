@@ -1,0 +1,146 @@
+29
++ int int char bool float : int
++ char int bool float char : int
++ string string char : string
++ bool bool int char float : int
++ float int char bool float : float
++= int int char bool float : int
++= char int bool float char : int
++= string string char : string
++= bool bool int char float : int
++= float int char bool float : float
+- int int char bool float : int
+- char int bool float char : int
+- string : none
+- bool bool int char float : int
+- float int char bool float : float
+-= int int char bool float : int
+-= char int bool float char : int
+-= string : none
+-= bool bool int char float : int
+-= float int char bool float : float
+* int int char bool float : int
+* char int bool float char : int
+* string : none
+* bool bool int char float : int
+* float int char bool float : float
+*= int int char bool float : int
+*= char int bool float char : int
+*= string : none
+*= bool bool int char float : int
+*= float int char bool float : float
+/ int int char bool float : int
+/ char int bool float char : int
+/ string : none
+/ bool bool int char float : int
+/ float int char bool float : float
+/= int int char bool float : int
+/= char int bool float char : int
+/= string : none
+/= bool bool int char float : int
+/= float int char bool float : float
+% int int bool char : int
+% char int bool char : int
+% string : none
+% bool bool int char : int
+% float : none
+%= int int bool char : int
+%= char int bool char : int
+%= string : none
+%= bool bool int char : int
+%= float : none
+^ int int bool char : int
+^ char int bool char : int
+^ string : none
+^ bool bool int char : int
+^ float : none
+^= int int bool char : int
+^= char int bool char : int
+^= string : none
+^= bool bool int char : int
+^= float : none
+& int int bool char : int
+& char int bool char : int
+& string : none
+& bool bool int char : int
+& float : none
+&= int int bool char : int
+&= char int bool char : int
+&= string : none
+&= bool bool int char : int
+&= float : none
+| int int bool char : int
+| char int bool char : int
+| string : none
+| bool bool int char : int
+| float : none
+|= int int bool char : int
+|= char int bool char : int
+|= string : none
+|= bool bool int char : int
+|= float : none
+** int int bool char float : int
+** char : int
+** string : none
+** bool : none
+** float int bool char float : float
+= int int bool char : int
+= char int char : char
+= string string char : string
+= bool bool int char float : bool
+= float int bool char float : float
+> int int bool char float : bool
+> char int char : bool
+> string string char : bool
+> bool bool int char float : bool
+> float int bool char float : bool
+>= int int bool char float : bool
+>= char int char : bool
+>= string string char : bool
+>= bool bool int char float : bool
+>= float int bool char float : bool
+< int int bool char float : bool
+< char int char : bool
+< string string char : bool
+< bool bool int char float : bool
+< float int bool char float : bool
+<= int int bool char float : bool
+<= char int char : bool
+<= string string char : bool
+<= bool bool int char float : bool
+<= float int bool char float : bool
+== int int bool char float : bool
+== char int char : bool
+== string string char : bool
+== bool bool int char float : bool
+== float int bool char float : bool
+!= int int bool char float : bool
+!= char int char : bool
+!= string string char : bool
+!= bool bool int char float : bool
+!= float int bool char float : bool
+&& int int bool char float string : bool
+&& char int bool char float string : bool
+&& string int bool char float string : bool
+&& bool int bool char float string : bool
+&& float int bool char float string : bool
+|| int int bool char float string : bool
+|| char int bool char float string : bool
+|| string int bool char float string : bool
+|| bool int bool char float string : bool
+|| float int bool char float string : bool
+! int 1 int
+! char 0 
+! string 0
+! bool 0
+! float 0
+++ int 1 void
+++ char 1 void
+++ string 0
+++ bool 0
+++ float 0
+-- int 1 void
+-- char 1 void
+-- string 0
+-- bool 0
+-- float 0

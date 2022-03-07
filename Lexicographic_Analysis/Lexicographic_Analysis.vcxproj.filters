@@ -27,6 +27,15 @@
     <ClCompile Include="ErrorSynt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Semantical.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorSemant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="input.txt">
@@ -38,6 +47,9 @@
     <Text Include="stuff.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="opers_types.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Syntactical.h">
@@ -47,6 +59,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ErrorSynt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Semantical.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorSemant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
