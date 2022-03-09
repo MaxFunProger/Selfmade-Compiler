@@ -1,0 +1,8 @@
+5
+int int char bool ;
+char char int bool ; 
+bool bool char int ;
+float float int char bool ;
+string string char ;
+
+x y z; means that y and z can be catsed to x

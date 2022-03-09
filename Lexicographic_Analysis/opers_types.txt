@@ -1,4 +1,4 @@
-29
+30 4
 + int int char bool float : int
 + char int bool float char : int
 + string string char : string
@@ -144,3 +144,8 @@
 -- string 0
 -- bool 0
 -- float 0
+not int 1 bool
+not char 1 bool
+not string 0
+not bool 1 bool
+not float 1 bool

@@ -5,13 +5,14 @@
 #include <string.h>
 #include <vector>
 #include <fstream>
+#include "ErrorSemant.h"
 
 class ExpChecker {
 public:
 	ExpChecker();
 
-	void check_op(std::string, std::string, std::string);
-	void check_op(std::string, std::string);
+	std::string check_op(std::string, std::string, std::string);
+	std::string check_op(std::string, std::string);
 private:
 	std::map<std::string, std::map<std::string, std::map<std::string, std::string > > > bin_ops_;
 	std::map<std::string, std::map<std::string, std::string> > uno_ops_;

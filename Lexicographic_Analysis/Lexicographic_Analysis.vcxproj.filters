@@ -50,6 +50,9 @@
     <Text Include="opers_types.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="cast_table.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Syntactical.h">

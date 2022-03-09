@@ -148,6 +148,7 @@
     <ClCompile Include="TID.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="cast_table.txt" />
     <Text Include="input.txt" />
     <Text Include="machine.txt" />
     <Text Include="opers_types.txt" />

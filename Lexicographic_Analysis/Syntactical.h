@@ -10,18 +10,7 @@ public:
 	Syntactical(Lexical*);
 
 	void Program();
-	void Type();
-	void Int();
-	void Float();
-	void Bool();
-	void String();
-	void Char();
-	void Num();
-	void Digit();
-	void Letter();
 	void Value();
-	void Sign();
-	void Name();
 	void Variable();
 	void Stopper();
 	void Block();
@@ -42,6 +31,7 @@ public:
 	void Parameters();
 	void FuncCall();
 	void Expression();
+	std::string ReturnExpression();
 	bool Priority1(std::string);
 	bool Priority2(std::string);
 	bool Priority3(std::string);
@@ -70,6 +60,7 @@ public:
 	void push(std::string);
 	std::string pop();
 	int check_ind();
+	bool is_castable(std::string, std::string);
 
 private:
 	Lexical* lex_;
@@ -84,4 +75,6 @@ private:
 	std::vector<std::pair<std::string, std::string> > params_;
 	std::vector<std::string> stack_;
 	std::set<std::string> ops_;
+	std::map<std::string, std::map<std::string, int> > cast_table_;
+	std::string dec_type_;
 };

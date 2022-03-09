@@ -10,7 +10,7 @@ void Local_TID::push_func(Func func, int flag = 0) {
 		}
 	}
 	else {
-		throw; // redeclaration
+		throw ErrorSemant("redeclaration occured"); // redeclaration
 	}
 }
 
@@ -19,7 +19,7 @@ void Local_TID::push_var(Var var) {
 		vars_[var.name] = var;
 	}
 	else {
-		throw; // redeclaration
+		throw ErrorSemant("redeclaration occured"); // redeclaration
 	}
 }
 

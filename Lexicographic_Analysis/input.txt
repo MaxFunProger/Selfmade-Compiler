@@ -1,13 +1,13 @@
-int b;
-
-fun int lel(int b){
+fun bool lol(){
+	return true;
 }
 
-fun int test(int a){
-	b += a;
-	for (int i = 0; b < a; ++i){
-		b += i;
-	}
+int true_ = 1;
+
+fun int main(){
+	int b, c = true;
+	b = not ((1 + 'a') + 41 * lol() + lol() / lol()) * true;
+	b += 10 * 15 / lol();
 }
 
 int a = 5;

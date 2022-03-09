@@ -4,6 +4,7 @@
 #include <string>
 #include <string.h>
 #include <set>
+#include "ErrorSemant.h"
 
 struct Var {
 
@@ -29,7 +30,7 @@ struct Func {
 class Local_TID {
 public:
 
-	Local_TID(Local_TID* parent) : parent_(parent), next_(nullptr) {}
+	Local_TID(Local_TID* parent) : parent_(parent), next_(nullptr), return_(0), stopper_(0), func_type_("none") {}
 
 	void push_func(Func, int);
 
@@ -51,7 +52,9 @@ public:
 	std::map<std::string, Func> funcs_;
 	Local_TID* parent_;
 	Local_TID* next_;
-
+	bool return_;
+	bool stopper_;
+	std::string func_type_;
 };
 
 class TIDOperator {
