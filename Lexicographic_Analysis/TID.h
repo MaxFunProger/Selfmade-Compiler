@@ -30,7 +30,17 @@ struct Func {
 class Local_TID {
 public:
 
-	Local_TID(Local_TID* parent) : parent_(parent), next_(nullptr), return_(0), stopper_(0), func_type_("none") {}
+	Local_TID(Local_TID* parent) : parent_(parent), next_(nullptr), return_(0), stopper_(0), func_type_("none") {
+		if (parent_ != nullptr) {
+			if (parent_->return_ == 1) {
+				return_ = 1;
+				func_type_ = parent_->func_type_;
+			}
+			if (parent_->stopper_ == 1) {
+				stopper_ = 1;
+			}
+		}
+	}
 
 	void push_func(Func, int);
 

@@ -913,11 +913,11 @@ void Syntactical::Stopper() {
 	}
 
 	if ((val_ == "break" || val_ == "continue") && !oper_->cur->stopper_) {
-		throw ErrorSemant(lexem_.str_number, val_ + " is not allowed here");
+		throw ErrorSemant(lexem_.str_number, val_ + " is not allowed");
 	}
 
 	if (val_ == "return" && !oper_->cur->return_) {
-		throw ErrorSemant(lexem_.str_number, "return is not allowed here");
+		throw ErrorSemant(lexem_.str_number, "return is not allowed");
 	}
 
 	if (val_ == "return") {
