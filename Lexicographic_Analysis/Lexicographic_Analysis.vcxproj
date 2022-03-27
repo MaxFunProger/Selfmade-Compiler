@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ErrorLex.cpp" />
     <ClCompile Include="ErrorSemant.cpp" />
     <ClCompile Include="ErrorSynt.cpp" />
     <ClCompile Include="Lexical.cpp" />
@@ -155,6 +156,7 @@
     <Text Include="stuff.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorLex.h" />
     <ClInclude Include="ErrorSemant.h" />
     <ClInclude Include="ErrorSynt.h" />
     <ClInclude Include="Lexical.h" />

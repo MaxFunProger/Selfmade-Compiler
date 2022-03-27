@@ -23,7 +23,7 @@ struct Func {
 
 	std::string type;
 	std::string name;
-	std::vector<std::pair<std::string, std::string> > params;
+	std::vector<std::pair<std::string, std::string> > params; // type : name
 };
 
 
@@ -54,6 +54,8 @@ public:
 
 	std::string find_func_all(std::string);
 
+	std::vector<std::pair<std::string, std::string> > get_func_params(std::string);
+
 	Local_TID* new_TID(Local_TID*);
 
 	void del_TID(Local_TID*);
@@ -75,6 +77,6 @@ public:
 
 	std::string get_type_var(std::string);
 
-	std::string get_type_func(std::string);
+	std::string get_type_func(std::string); // do not use because in finds just using name (no overload)
 	Local_TID* cur;
 };

@@ -37,6 +37,19 @@ std::string Local_TID::find_func(std::string func) {
 	return "none";
 }
 
+std::vector<std::pair<std::string, std::string> > Local_TID::get_func_params(std::string func) {
+	Local_TID* tmp = this;
+	while (tmp != nullptr) {
+		if (tmp->funcs_.find(func) != tmp->funcs_.end()) {
+			return tmp->funcs_[func].params;
+		}
+		else {
+			tmp = tmp->parent_;
+		}
+	}
+	return { {"none", "none"} };
+}
+
 std::string Local_TID::find_func_all(std::string func) {
 	Local_TID* tmp = this;
 	while (tmp != nullptr) {

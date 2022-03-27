@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <fstream>
+#include "ErrorLex.h"
 
 struct State {
 	std::vector<State*> trans;

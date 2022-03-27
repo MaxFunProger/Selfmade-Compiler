@@ -1,7 +1,7 @@
 #include "ErrorSemant.h"
 
 void ErrorSemant::display() {
-	std::cout << "In line " << str_num_ << ' ' + text_ << "\n";
+	std::cout << "(Semantical) In line " << str_num_ << ' ' + text_ << "\n";
 }
 
 void ErrorSemant::set_line_number(int str_num) {

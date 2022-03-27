@@ -5,4 +5,4 @@ bool bool char int ;
 float float int char bool ;
 string string char ;
 
-x y z; means that y and z can be catsed to x
+x y z; means that y and z can be casted to x

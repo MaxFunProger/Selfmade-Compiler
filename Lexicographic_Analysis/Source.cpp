@@ -1,11 +1,17 @@
 ﻿#pragma once
 #include "Syntactical.h"
+#include "Lexical.h"
 
 
 
 int main() {
-	Lexical* lex = new Lexical();
-	Syntactical* synt = new Syntactical(lex);
+	try {
+		Lexical* lex = new Lexical();
+		Syntactical* synt = new Syntactical(lex);
+	}
+	catch (ErrorLex err) {
+		err.display();
+	}
 
 
 

@@ -8,5 +8,5 @@ ErrorSynt::ErrorSynt(int str_num, std::string got, std::string expected)
 
 
 void ErrorSynt::display() {
-	std::cout << "In line " << str_num_ << " got '" << got_ << "' but expected '" << expected_ << "'\n";
+	std::cout << "(Syntactical) In line " << str_num_ << " got '" << got_ << "' but expected '" << expected_ << "'\n";
 }

@@ -91,7 +91,7 @@ Lexical::Lexical() {
 					}
 				}
 				if (prev != nullptr && prev != states[0] && !prev->is_terminal) {
-					//std::cout << "ERROR" << ' ' << text_queue << "\n";
+					throw ErrorLex(j + 1, text_queue);
 					exit = true;
 					break;
 				}
@@ -121,7 +121,7 @@ Lexical::Lexical() {
 					}
 				}
 				if (prev != nullptr && prev != states[0] && !prev->is_terminal) {
-					//std::cout << "ERROR" << ' ' << text_queue << "\n";
+					throw ErrorLex(j + 1, text_queue);
 					exit = true;
 					break;
 				}
@@ -150,7 +150,7 @@ Lexical::Lexical() {
 					}
 				}
 				if (prev != nullptr && prev != states[0] && !prev->is_terminal) {
-					//std::cout << "ERROR" << ' ' << text_queue << "\n";
+					throw ErrorLex(j + 1, text_queue);
 					exit = true;
 					break;
 				}
@@ -164,8 +164,7 @@ Lexical::Lexical() {
 			}
 		}
 		if (exit) {
-			std::cout << "Lexical Error";
-			return;
+			throw ErrorLex(j + 1, text_queue);
 		}
 		if (flag) {
 			flag = false;
@@ -183,7 +182,7 @@ Lexical::Lexical() {
 			lexems.push_back(Lex(result[cur->type], text_queue, text.size()));
 		}
 	}
-	std::cout << "Lexems: OK" << "\n";
+	std::cout << "Lexems: OK\n";
 }
 
 Lex Lexical::get_lex() {

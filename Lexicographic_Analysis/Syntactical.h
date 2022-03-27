@@ -5,6 +5,14 @@
 #include "Semantical.h"
 #include "ErrorSemant.h"
 
+
+struct Type {
+	Type() : type(""), index(0), call(0) {};
+	Type(std::string t, int ind, int call) : type(t), index(ind), call(call) {};
+	std::string type;
+	int index, call;
+};
+
 class Syntactical {
 public:
 	Syntactical(Lexical*);
@@ -54,13 +62,15 @@ public:
 	void Atom9();
 	void Atom10();
 	void AtomNot();
-	void Array();
+	int Array(int = 1);
 	void clear();
 	void check_op(int);
-	void push(std::string);
-	std::string pop();
+	void push(std::string, int = 0, int = 0);
+	void stack_clear();
+	Type pop();
 	int check_ind();
 	bool is_castable(std::string, std::string);
+	int array_check(int);
 
 private:
 	Lexical* lex_;
@@ -73,8 +83,15 @@ private:
 	ExpChecker* checker_;
 	std::string nameo_, typeo_, typev_, namev_;
 	std::vector<std::pair<std::string, std::string> > params_;
-	std::vector<std::string> stack_;
+	std::vector<Type> stack_;
 	std::set<std::string> ops_;
 	std::map<std::string, std::map<std::string, int> > cast_table_;
 	std::string dec_type_;
+	int max_depth_;
+	bool decl_;
+	int index_;
+	int call_;
+	std::vector<std::string> index_vec_;
+	std::string array_type_;
+
 };

@@ -1,9 +1,19 @@
 #include "Syntactical.h"
 #include "Semantical.h"
 
-Syntactical::Syntactical(Lexical* lex) : lex_(lex), lexem_(Lex()), type_(lexem_.type), val_(lexem_.val) {
+Syntactical::Syntactical(Lexical* lex) 
+	: lex_(lex)
+	, lexem_(Lex())
+	, type_(lexem_.type)
+	, val_(lexem_.val)
+	, max_depth_(-1)
+	, index_(0)
+	, call_(0)
+	, array_type_("none") {
 	try {
-		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<", "**", "<=", ">=", "==", "+=", "-=", "*=", "/=", "|=", "%=", "^=", "&&", "||", "|", "&&", "=", "!=", "not"};
+		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<",
+			"**", "<=", ">=", "==", "+=", "-=", "*=", "/=",
+			"|=", "%=", "^=", "&&", "||", "|", "&&", "=", "!=", "not"};
 		std::set<std::string> types = { "int", "string", "bool", "char", "float", "void" };
 		oper_ = new TIDOperator();
 		oper_->cur = new Local_TID(nullptr);
@@ -36,33 +46,42 @@ Syntactical::Syntactical(Lexical* lex) : lex_(lex), lexem_(Lex()), type_(lexem_.
 		}
 		err.display();
 	}
+	catch (...) {
+		std::cout << "Unexpected behaviour\n";
+	}
 }
 
 void Syntactical::check_op(int ch) {
 	if (!ch) {
 		return;
 	}
-	std::string op2 = pop();
-	std::string sign = pop();
-	if (ops_.find(op2) == ops_.end() && ops_.find(sign) == ops_.end()) {
-		push(sign);
-		push(op2);
+	Type op2 = pop();
+	Type sign = pop();
+	if (ops_.find(op2.type) == ops_.end() && ops_.find(sign.type) == ops_.end() || sign.type == "(" || sign.index != op2.index || sign.call != op2.call) {
+		push(sign.type, sign.index, sign.call);
+		push(op2.type, op2.index, op2.call);
 		return;
 	}
 	std::string ret;
-	if (op2 == "!") { // a! op2 and sign are swapped here
-		ret = checker_->check_op(op2, sign);
-		push(ret);
+	if (op2.type == "!") { // a! op2 and sign are swapped here
+		ret = checker_->check_op(op2.type, sign.type);
+		push(ret, op2.index, op2.call);
 		return;
 	}
-	if (sign != "++" && sign != "--" && sign != "!" && sign != "not") {
-		std::string op1 = pop();
-		ret = checker_->check_op(sign, op1, op2);
-		push(ret);
+	if (sign.type != "++" && sign.type != "--" && sign.type != "!" && sign.type != "not") {
+		Type op1 = pop();
+		if (op1.index != op2.index || op1.call != op2.call) {
+			push(op1.type, op1.index, op1.call);
+			push(sign.type, sign.index, sign.call);
+			push(op2.type, op2.index, op2.call);
+			return;
+		}
+		ret = checker_->check_op(sign.type, op1.type, op2.type);
+		push(ret, op1.index, op1.call);
 	}
 	else {
-		ret = checker_->check_op(sign, op2);
-		push(ret);
+		ret = checker_->check_op(sign.type, op2.type);
+		push(ret, op2.index, op2.call);
 	}
 }
 
@@ -70,8 +89,8 @@ bool Syntactical::is_castable(std::string type1, std::string type2) {
 	return cast_table_[type1][type2];
 }
 
-void Syntactical::push(std::string op) {
-	stack_.push_back(op);
+void Syntactical::push(std::string op, int ind, int call) {
+	stack_.push_back(Type(op, ind, call));
 }
 
 int Syntactical::check_ind() {
@@ -82,8 +101,8 @@ int Syntactical::check_ind() {
 	return 1;
 }
 
-std::string Syntactical::pop() {
-	std::string tmp = stack_.back();
+Type Syntactical::pop() {
+	Type tmp = stack_.back();
 	stack_.pop_back();
 	return tmp;
 }
@@ -99,6 +118,10 @@ void Syntactical::low(int cnt = 1) {
 
 void Syntactical::clear() {
 	params_.clear();
+}
+
+void Syntactical::stack_clear() {
+	stack_.clear();
 }
 
 
@@ -177,6 +200,7 @@ void Syntactical::Declaration() {
 		typev_ = lex_->lexems[lex_->index].val;
 		dec_type_ = typev_;
 		Section();
+		decl_ = 0;
 		gl();
 		if (val_ == ";") {
 			return;
@@ -187,6 +211,7 @@ void Syntactical::Declaration() {
 			}
 			while (val_ == ",") {
 				Section();
+				decl_ = 0;
 				gl();
 			}
 			if (val_ != ";") {
@@ -201,18 +226,28 @@ void Syntactical::Declaration() {
 
 void Syntactical::Section() {
 	gl();
+	decl_ = 1;
 	namev_ = lex_->lexems[lex_->index].val;
 	if (type_ == 2) {
 		gl();
 		if (val_ == "[") {
+			if (typev_ == "string" && decl_) {
+				throw ErrorSemant(lexem_.str_number, "unexpected [");
+			}
+			++index_;
 			low();
 			while (true) {
 				gl();
 				if (val_ == "[") {
 					typev_.push_back('[');
-					Expression();
+					std::string tp = ReturnExpression();
+					if (!is_castable("int", tp)) {
+						throw ErrorSemant(lexem_.str_number, tp + "can't be an index");
+					}
+					pop();
 					gl();
 					if (val_ == "]") {
+						--index_ ;
 						typev_.push_back(']');
 						continue;
 					}
@@ -230,6 +265,7 @@ void Syntactical::Section() {
 
 
 			gl();
+			decl_ = 0;
 			if (val_ == "=") {
 				gl();
 				if (val_ == "{") {
@@ -237,6 +273,7 @@ void Syntactical::Section() {
 					gl();
 					if (val_ == ";" || val_ == ",") {
 						low();
+						stack_clear();
 						return;
 					}
 					else {
@@ -253,6 +290,7 @@ void Syntactical::Section() {
 			}
 			else if (val_ == ";" || val_ == ",") {
 				low();
+				stack_clear();
 				return;
 			}
 			else {
@@ -262,6 +300,7 @@ void Syntactical::Section() {
 		else {
 			oper_->cur->push_var(Var(typev_, namev_));
 			clear();
+			decl_ = 0;
 			if (val_ == "=") {
 				std::string tmp = ReturnExpression();
 				if (!is_castable(dec_type_, tmp)) {
@@ -270,6 +309,7 @@ void Syntactical::Section() {
 			}
 			else if (val_ == ";" || val_ == ",") {
 				low();
+				stack_clear();
 				return;
 			}
 			else {
@@ -315,8 +355,10 @@ void Syntactical::Block() {
 void Syntactical::Operator() {
 	
 	gl();
-	if (val_ == ";")
+	if (val_ == ";") {
+		stack_clear();
 		return;
+	}
 	if (type_ == 8) {
 		low();
 		Declaration(); // eats ;
@@ -326,6 +368,7 @@ void Syntactical::Operator() {
 		InOut();
 		gl();
 		if (val_ == ";") {
+			stack_clear();
 			return;
 		}
 		else {
@@ -336,6 +379,7 @@ void Syntactical::Operator() {
 		Stopper();
 		gl();
 		if (val_ == ";") {
+			stack_clear();
 			return;
 		}
 		else {
@@ -350,6 +394,7 @@ void Syntactical::Operator() {
 		Expression();
 		gl();
 		if (val_ == ";") {
+			stack_clear();
 			return;
 		}
 		else {
@@ -357,7 +402,7 @@ void Syntactical::Operator() {
 		}
 	}
 
-
+	stack_clear();
 	return;
 }
 
@@ -373,8 +418,19 @@ void Syntactical::InOut() {
 
 void Syntactical::ListInOut() {
 	gl();
+	std::string tmp;
 	while (val_ == ">>" || val_ == "<<") {
-		Expression();
+		stack_clear();
+		tmp = val_;
+		gl();
+		if (tmp == ">>" && type_ != 2) {
+			throw  ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
+		}
+		low();
+		std::string tmp2 = ReturnExpression();
+		if ((tmp2 == "void" || find(tmp2.begin(), tmp2.end(), '[') != tmp2.end()) && tmp == "<<") {
+			throw ErrorSemant(lexem_.str_number, "unexpected type was pushed to print out");
+		}
 		gl();
 	}
 	low();
@@ -534,12 +590,15 @@ void Syntactical::For() {
 }
 
 void Syntactical::FuncCall() { //DONE
-	push(oper_->cur->find_func_all(lex_->lexems[lex_->index].val));
+	push(oper_->cur->find_func_all(lex_->lexems[lex_->index].val), index_, call_);
+	++call_;
+	params_ = oper_->cur->get_func_params(lex_->lexems[lex_->index].val);
 	gl();
 	if (val_ == "(") {
 		Parameters();
 		gl();
 		if (val_ == ")") {
+			--call_;
 			return;
 		}
 		else {
@@ -554,10 +613,23 @@ void Syntactical::FuncCall() { //DONE
 
 void Syntactical::Parameters() {
 	gl();
+	int sz = params_.size();
+	int cnt = -1;
+	std::string type;
 	while (true) {
 		if (val_ != ")") {
 			low();
-			Expression();
+			type = ReturnExpression();
+			pop();
+			++cnt;
+			if (cnt < sz) {
+				if (!is_castable(params_[cnt].first, type)) {
+					throw ErrorSemant(lexem_.str_number, "expected " + params_[cnt].first + " but got " + type);
+				}
+			}
+			else {
+				throw ErrorSemant(lexem_.str_number, "unexpected number of parameters in function call (more than expected)");
+			}
 		}
 		else if (val_ == ")") {
 			low();
@@ -577,6 +649,9 @@ void Syntactical::Parameters() {
 			low();
 			break;
 		}
+	}
+	if (cnt + 1 < sz) {
+		throw ErrorSemant(lexem_.str_number, "unexpected number of parameters in function call (less than expected)");
 	}
 }
 
@@ -608,25 +683,57 @@ void Syntactical::DecFuncParameters() {
 	}
 }
 
-void Syntactical::Array() {
+
+int Syntactical::array_check(int depth = 1) {
+	if (val_ == "{") {
+		max_depth_ = std::max(max_depth_, array_check(depth + 1));
+	}
+	if (val_ == "}") {
+		return depth;
+	}
+}
+
+int Syntactical::Array(int depth) {
 	gl();
 	std::string prev = ",";
 	while (val_ == "{") {
-		Array();
+		int tmp = Array(depth + 1);
+		if (tmp != max_depth_ && max_depth_ != -1) {
+			throw ErrorSemant(lexem_.str_number, "different dementions in single array");
+		}
+		max_depth_ = tmp;
 		gl();
 		if (val_ != "," && val_ != "}") {
-			throw;
+			throw ErrorSynt(lexem_.str_number, val_, ", or }");
 		}
 		if (val_ == ",") {
 			gl();
 		}
-		else {
-			return;
+		else { // need to pull up the maximum depth of each recursion and compare with global max_depth_. also line 685
+			if (depth == 1) {
+				std::string tmp_str = "";
+				for (int i = 0; i < depth; ++i) {
+					tmp_str += "[]";
+				}
+				push(array_type_ + tmp_str);
+			}
+			array_type_ = "none";
+			max_depth_ = -1;
+			return tmp;
 		}
 	}
 	while (type_ == 3 || val_ == ",") {
 		if (type_ == 3 && prev == ",") {
 			prev = val_;
+			low();
+			if (array_type_ != "none") {
+				if (ReturnExpression() != array_type_) {
+					throw ErrorSemant(lexem_.str_number, "different types of elements of single array");
+				}
+			}
+			else {
+				array_type_ = ReturnExpression();
+			}
 			gl();
 		}
 		else if (val_ == "," && prev != ",") {
@@ -643,7 +750,18 @@ void Syntactical::Array() {
 	if (val_ != "}") {
 		throw  ErrorSynt(lexem_.str_number, val_, "}"); // expected }
 	}
-	return;
+
+	if (depth == 1) {
+		std::string tmp_str = "";
+		for (int i = 0; i < depth; ++i) {
+			tmp_str += "[]";
+		}
+		push(array_type_ + tmp_str);
+	}
+	array_type_ = "none";
+	max_depth_ = -1;
+
+	return depth;
 }
 
 void Syntactical::Expression() {
@@ -651,7 +769,10 @@ void Syntactical::Expression() {
 	gl();
 	while (Priority10(val_)) {
 		Atom10();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority10(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -659,8 +780,8 @@ void Syntactical::Expression() {
 
 bool Syntactical::Priority1(std::string st) {
 	if (st == "++" || st == "--") {
-		if (stack_.size() && stack_.back() != "--" && stack_.back() != "++" || !stack_.size())
-			push(st);
+		if (stack_.size() && stack_.back().type != "--" && stack_.back().type != "++" || !stack_.size())
+			push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -670,8 +791,8 @@ bool Syntactical::Priority1(std::string st) {
 
 bool Syntactical::Priority2(std::string st) {
 	if (st == "!") {
-		if (stack_.size() && stack_.back() != "!" || !stack_.size())
-			push(st);
+		if (stack_.size() && stack_.back().type != "!" || !stack_.size())
+			push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -681,7 +802,7 @@ bool Syntactical::Priority2(std::string st) {
 
 bool Syntactical::Priority3(std::string st) {
 	if (st == "**") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -691,7 +812,7 @@ bool Syntactical::Priority3(std::string st) {
 
 bool Syntactical::Priority4(std::string st) {
 	if (st == "*" || st == "/" || st == "%" || st == "$") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -701,7 +822,7 @@ bool Syntactical::Priority4(std::string st) {
 
 bool Syntactical::Priority5(std::string st) {
 	if (st == "+" || st == "-") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -711,7 +832,7 @@ bool Syntactical::Priority5(std::string st) {
 
 bool Syntactical::Priority6(std::string st) {
 	if (st == "^" || st == "|" || st == "&") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -721,7 +842,7 @@ bool Syntactical::Priority6(std::string st) {
 
 bool Syntactical::Priority7(std::string st) {
 	if (st == "<" || st == ">" || st == "<=" || st == ">=" || st == "==" || st == "!=") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -731,7 +852,7 @@ bool Syntactical::Priority7(std::string st) {
 
 bool Syntactical::Priority8(std::string st) {
 	if (st == "&&") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -741,7 +862,7 @@ bool Syntactical::Priority8(std::string st) {
 
 bool Syntactical::Priority9(std::string st) {
 	if (st == "||") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -752,7 +873,7 @@ bool Syntactical::Priority9(std::string st) {
 bool Syntactical::Priority10(std::string st) {
 	if (st == "=" || st == "+=" || st == "-=" || st == "*=" || st == "/="
 		|| st == "%=" || st == "^=" || st == "$=" || st == "**=" || st == "&=" || st == "|=") {
-		push(st);
+		push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -762,8 +883,8 @@ bool Syntactical::Priority10(std::string st) {
 
 bool Syntactical::PriorityNot(std::string st) {
 	if (st == "not") {
-		if (stack_.size() && stack_.back() != "not" || !stack_.size())
-			push(st);
+		if (stack_.size() && stack_.back().type != "not" || !stack_.size())
+			push(st, index_, call_);
 		return true;
 	}
 	else {
@@ -784,9 +905,12 @@ void Syntactical::Atom1() { //DONE
 		Variable();
 	}
 	else if (val_ == "(") {
+		push("(", index_, call_);
 		Expression();
 		gl();
 		if (val_ == ")") {
+			stack_[stack_.size() - 2] = stack_[stack_.size() - 1];
+			pop();
 			return;
 		}
 		else {
@@ -806,7 +930,11 @@ void Syntactical::Atom2() {
 	}
 	low();
 	Atom1();
-	check_op(check_ind());
+
+	while (stack_.size() > 1 && Priority1(stack_[stack_.size() - 2].type)) {
+		pop();
+		check_op(check_ind());
+	}
 }
 
 void Syntactical::Atom3() {
@@ -815,7 +943,10 @@ void Syntactical::Atom3() {
 	while (Priority2(val_)) {
 		gl();
 	}
-	check_op(check_ind());
+	while (stack_.size() > 1 && Priority2(stack_[stack_.size() - 2].type)) {
+		pop();
+		check_op(check_ind());
+	}
 	low();
 }
 
@@ -824,7 +955,10 @@ void Syntactical::AtomNot() {
 	gl();
 	while (Priority3(val_)) {
 		Atom3();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority3(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -837,7 +971,10 @@ void Syntactical::Atom4() {
 	}
 	low();
 	AtomNot();
-	check_op(check_ind());
+	while (stack_.size() > 1 && PriorityNot(stack_[stack_.size() - 2].type)) {
+		pop();
+		check_op(check_ind());
+	}
 }
 
 void Syntactical::Atom5() {
@@ -845,7 +982,10 @@ void Syntactical::Atom5() {
 	gl();
 	while (Priority4(val_)) {
 		Atom4();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority4(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -856,7 +996,10 @@ void Syntactical::Atom6() {
 	gl();
 	while (Priority5(val_)) {
 		Atom5();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority5(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -867,7 +1010,10 @@ void Syntactical::Atom7() {
 	gl();
 	while (Priority6(val_)) {
 		Atom6();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority6(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -878,7 +1024,10 @@ void Syntactical::Atom8() {
 	gl();
 	while (Priority7(val_)) {
 		Atom7();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority7(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -889,7 +1038,10 @@ void Syntactical::Atom9() {
 	gl();
 	while (Priority8(val_)) {
 		Atom8();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority8(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -900,7 +1052,10 @@ void Syntactical::Atom10() {
 	gl();
 	while (Priority9(val_)) {
 		Atom9();
-		check_op(check_ind());
+		while (stack_.size() > 1 && Priority9(stack_[stack_.size() - 2].type)) {
+			pop();
+			check_op(check_ind());
+		}
 		gl();
 	}
 	low();
@@ -933,7 +1088,7 @@ void Syntactical::Stopper() {
 
 std::string Syntactical::ReturnExpression() {
 	Expression();
-	return stack_.back();
+	return stack_.back().type;
 }
 
 void Syntactical::Variable() { // DONE
@@ -943,52 +1098,83 @@ void Syntactical::Variable() { // DONE
 		low();
 		std::string tmp = oper_->cur->find_func_all(namev_);
 		if (tmp == "none") {
-			throw ErrorSemant(lexem_.str_number, "undefined function");; // undefined function
+			throw ErrorSemant(lexem_.str_number, "undefined function"); // undefined function
 		}
 		FuncCall();
 		return;
 	}
-	while (val_ == "[") {
+	typev_ = oper_->get_type_var(namev_);
+	if (typev_ == "string" && val_ == "[") {
+		if (decl_) {
+			throw ErrorSemant(lexem_.str_number, "undefined [");
+		}
+		++index_;
 		Expression();
 		gl();
-		typev_.push_back('[');
 		if (val_ == "]") {
-			typev_.push_back(']');
+			pop();
+			--index_;
+			push("char", index_, call_);
+			return;
+		}
+		else {
+			throw  ErrorSynt(lexem_.str_number, val_, "]");
+		}
+	}
+	while (val_ == "[") {
+		if (decl_) {
+			throw ErrorSemant(lexem_.str_number, "undefined [");
+		}
+		++index_;
+		std::string tp = ReturnExpression();
+		if (!is_castable("int", tp)) {
+			throw ErrorSemant(lexem_.str_number, tp + "can't be an index");
+		}
+		pop();
+		gl();
+		//typev_.push_back('[');
+		if (val_ == "]") {
+			//typev_.push_back(']');
+			--index_;
 			gl();
 		}
 		else {
 			throw  ErrorSynt(lexem_.str_number, val_, "]"); // expected "]"
 		}
 	}
-	push(typev_);
+	push(typev_, index_, call_);
 	low();
+	decl_ = 0;
 }
 
-void Syntactical::Value() { // DONE without arrays
+void Syntactical::Value() { // DONE 
+	/*if (val_ == "[") {
+		index_ = 1;
+	}*/
 	gl();
-	if (val_ == "{") {
+	if (val_ == "{" && !decl_) {
 		Array();
 	}
-	else if (type_ == 3) {
+	else if (type_ == 3 && !decl_) {
 		if (find(val_.begin(), val_.end(), '"') != val_.end()) {
-			push("string");
+			push("string", index_, call_);
 		}
 		else if (find(val_.begin(), val_.end(), '\'') != val_.end()) {
-			push("char");
+			push("char", index_, call_);
 		}
 		else if (find(val_.begin(), val_.end(), '.') != val_.end()) {
-			push("float");
+			push("float", index_, call_);
 		}
 		else if (val_ == "true" || val_ == "false") {
-			push("bool");
+			push("bool", index_, call_);
 		}
 		else {
-			push("int");
+			push("int", index_, call_);
 		}
 		return;
 	}
-	else if (val_ == "true" || val_ == "false") {
-		push("bool");
+	else if ((val_ == "true" || val_ == "false") && !decl_) {
+		push("bool", index_, call_);
 	}
 	else if (type_ == 4) {
 		namev_ = lex_->lexems[lex_->index].val;
@@ -998,16 +1184,17 @@ void Syntactical::Value() { // DONE without arrays
 			low();
 			tmp = oper_->cur->find_func_all(namev_);
 			if (tmp == "none") {
-				throw ErrorSemant(lexem_.str_number, "undefined function");; // undefined function
+				throw ErrorSemant(lexem_.str_number, "undefined function"); // undefined function
 			}
 			FuncCall();
 		}
 		else {
 			low();
 			if (oper_->cur->find_var_all(namev_) == "none") {
-				throw ErrorSemant(lexem_.str_number, "undefined variable");; // undefined variable
+				throw ErrorSemant(lexem_.str_number, "undefined variable"); // undefined variable
 			}
 			Variable();
+			decl_ = 0;
 		}
 	}
 	else {
