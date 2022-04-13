@@ -36,7 +36,7 @@ public:
 	void DoWhile();
 	void For();
 	void If();
-	void Parameters();
+	void Parameters(std::vector<std::pair<std::string, std::string> >&);
 	void FuncCall();
 	void Expression();
 	std::string ReturnExpression();
@@ -62,7 +62,7 @@ public:
 	void Atom9();
 	void Atom10();
 	void AtomNot();
-	int Array(int = 1);
+	std::string Array(std::string = "none");
 	void clear();
 	void check_op(int);
 	void push(std::string, int = 0, int = 0);
