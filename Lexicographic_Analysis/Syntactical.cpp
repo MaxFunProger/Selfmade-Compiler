@@ -638,6 +638,9 @@ void Syntactical::FuncCall() { //DONE
 
 void Syntactical::Parameters(std::vector<std::pair<std::string, std::string> >& params) {
 	gl();
+	if (val_ == ")" && params.size()) {
+		throw ErrorSemant(lexem_.str_number, "unexpected number of parameters in function call (less than expected)");
+	}
 	//TODO initiaalization of [][][] parameter
 	int sz = params.size();
 	int cnt = -1;
@@ -686,17 +689,17 @@ void Syntactical::Parameters(std::vector<std::pair<std::string, std::string> >& 
 void Syntactical::DecFuncParameters() {
 	gl();
 	params_.clear();
+	decl_ = 1;
 	while (type_ == 8) {
 		typev_ = lex_->lexems[lex_->index].val;
 		gl();
 		if (type_ == 2) {
 			namev_ = lex_->lexems[lex_->index].val;
-			params_.push_back(std::make_pair(typev_, namev_));
-			Variable();
 		}
 		else {
 			throw ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
 		}
+		gl();
 		while (val_ == "[") {
 			typev_ += "[";
 			gl();
@@ -706,19 +709,12 @@ void Syntactical::DecFuncParameters() {
 			typev_ += "]";
 			gl();
 		}
-		if (type_ == 2) {
-			namev_ = lex_->lexems[lex_->index].val;
-			params_.push_back(std::make_pair(typev_, namev_));
-			Variable();
-		}
-		else {
-			throw ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
-		}
-		gl();
+		params_.push_back(std::make_pair(typev_, namev_));
 		if (val_ == ",") {
 			gl();
 		}
 	}
+	decl_ = 0;
 	if (val_ == ")") {
 		return;
 	}
