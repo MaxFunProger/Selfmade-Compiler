@@ -9,6 +9,8 @@ Syntactical::Syntactical(Lexical* lex)
 	, max_depth_(-1)
 	, index_(0)
 	, call_(0)
+	, decl_(0)
+	, was_stopper_(0)
 	, array_type_("none") {
 	try {
 		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<",
@@ -202,6 +204,10 @@ void Syntactical::FuncDeclaration() {
 		oper_->cur->return_ = 1;
 		oper_->cur->push_func(Func(typeo_, nameo_, params_), 1);
 		Block();
+		if (!was_stopper_ && typeo_ != "void") {
+			throw ErrorSemant(lexem_.str_number, "expected " + typeo_ + " return but it wasn't detected");
+		}
+		was_stopper_ = 0;
 	}
 	else {
 		throw  ErrorSynt(lexem_.str_number, val_, "("); // '(' expected
@@ -632,6 +638,7 @@ void Syntactical::FuncCall() { //DONE
 
 void Syntactical::Parameters(std::vector<std::pair<std::string, std::string> >& params) {
 	gl();
+	//TODO initiaalization of [][][] parameter
 	int sz = params.size();
 	int cnt = -1;
 	std::string type;
@@ -682,6 +689,14 @@ void Syntactical::DecFuncParameters() {
 	while (type_ == 8) {
 		typev_ = lex_->lexems[lex_->index].val;
 		gl();
+		if (type_ == 2) {
+			namev_ = lex_->lexems[lex_->index].val;
+			params_.push_back(std::make_pair(typev_, namev_));
+			Variable();
+		}
+		else {
+			throw ErrorSynt(lexem_.str_number, val_, "identificator"); // expected name
+		}
 		while (val_ == "[") {
 			typev_ += "[";
 			gl();
@@ -1092,16 +1107,13 @@ void Syntactical::Stopper() {
 	}
 
 	if (val_ == "return") {
+		was_stopper_ = 1;
 		gl();
 		if (oper_->cur->func_type_ == "void" && val_ != ";") {
 			throw ErrorSemant(lexem_.str_number, "returned something but expected void return");
 		}
 		low();
 		if (oper_->cur->func_type_ == "void") {
-			while (val_ != "}") {
-				gl();
-			}
-			low();
 			stack_clear();
 			return;
 		}
@@ -1116,10 +1128,6 @@ void Syntactical::Stopper() {
 		}
 		if (is_castable(oper_->cur->func_type_, tmp)) {
 			stack_clear();
-			while (val_ != "}") {
-				gl();
-			}
-			low();
 			return;
 		}
 		else {

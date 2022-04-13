@@ -91,6 +91,7 @@ private:
 	bool decl_;
 	int index_;
 	int call_;
+	int was_stopper_;
 	std::vector<std::string> index_vec_;
 	std::string array_type_;
 

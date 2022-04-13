@@ -1,14 +1,16 @@
 string s;
 string tt[100][100];
 
-fun int func(){
-	int a[10][10] = {{1, 2}, {1}};
-	int b = 'g' + 1;
-}
-
 fun int tttt(int a[10]){
 	tttt();
 }
+
+fun int func(){
+	int a[10][10] = {{1, 2}, {1}};
+	int b = 'g' + 1;
+	return 1;
+}
+
 
 fun int[][] kk(){
 	int a[10][10];
