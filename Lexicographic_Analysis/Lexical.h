@@ -24,10 +24,10 @@ struct Lex {
 		: type(-1)
 		, val("")
 		, str_number(-1) {}
-	int type;
-	std::string val;
 
-	int str_number;
+	int type; // type of lexem
+	std::string val; // value of lexem
+	int str_number; // number of line (in input code) where this lexem is
 };
 
 class Lexical {
@@ -39,7 +39,7 @@ public:
 	void set_index(int);
 
 	int index = -1;
-	std::vector<Lex> lexems;
+	std::vector<Lex> lexems; // input code splitted on lexems
 
 	std::vector<std::string> text;
 	std::set<std::string> stuff;
