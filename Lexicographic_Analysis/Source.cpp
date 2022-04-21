@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Syntactical.h"
 #include "Lexical.h"
+#include "Generation.h"
 
 
 
@@ -8,6 +9,8 @@ int main() {
 	try {
 		Lexical* lex = new Lexical();
 		Syntactical* synt = new Syntactical(lex);
+		lex->set_index(-1);
+		Generation* gen = new Generation(lex);
 	}
 	catch (ErrorLex err) {
 		err.display();
