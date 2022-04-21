@@ -12,6 +12,9 @@ int main() {
 	catch (ErrorLex err) {
 		err.display();
 	}
+	catch (...) {
+		std::cout << "Unexpected situation\n";
+	}
 
 
 

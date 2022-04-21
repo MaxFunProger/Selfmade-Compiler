@@ -71,6 +71,7 @@ Lexical::Lexical() {
 			/*if (text_queue == "return") {
 				int sdfg = 1;
 			}*/
+
 			if (text[j][i] == '/' && text[j][i + 1] == '/') {
 				prev = cur;
 				cur = states[0];
@@ -129,6 +130,10 @@ Lexical::Lexical() {
 				continue;
 			}
 			else {
+				if (cur == nullptr) {
+					throw ErrorLex(j + 1, text_queue);
+					std::cout << "wdefvgb"; // TODO
+				}
 				prev = cur;
 				cur = cur->trans[text[j][i]];
 			}

@@ -1,8 +1,15 @@
 string s;
 string tt[100][100];
 
+int a[2][2];
+int testst[2][2] = {{1}, {1}};
+fun int[][] arr(char cc[][]){
+	return {{1}};
+}
+
 fun int tttt(int a[][], string s){
-	tttt(a, "sdfg");
+	tttt(a, 'a');
+	return true;
 }
 
 fun int func(){
@@ -11,12 +18,10 @@ fun int func(){
 	return 1;
 }
 
-
 fun int[][] kk(){
 	int a[10][10];
-	return a[1];
+	return a;
 }
-
 
 fun string lol(string sr){
 	string s = '1', se = '2', st = "we";
@@ -25,23 +30,21 @@ fun string lol(string sr){
 	//int b = {1};
 	return tt[1][1];
 }
+
 fun int test(){	return 's';}
 int true_ = 1;
 
-fun int[][] arr(char[][] cc){
-	return {{1}};
-}
-
-fun int main(){
+fun void main(){
+	a[1][1] = 1;
 	arr({{'1'}, {'1'}});
 	cinout >> true_ << test() >> true_;
 	int b, c = true;
 	string s;
 	s = lol(s) * 41 + lol(lol(lol(s + s[test()])));
 	b = not(lol(s[0]) * 41 + lol(s[1]) + lol(s));
+	//b = 1.0 + 5;
 	b = not( not not(1 + not'a') + not(lol(s[0]) * 41 + lol(s[1]) + lol(s))) * true;
 	//b += 10 * 15 * lol(s);
+	false + 1 - 'a';
 	false + 1;
-	false + 1;
-
 }

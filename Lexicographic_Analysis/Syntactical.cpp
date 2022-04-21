@@ -154,7 +154,7 @@ void Syntactical::Program() {
 				if (val_ != "main" && type_ == 2) {
 					FuncDeclaration();
 				}
-				else if (val_ == "main" && typeo_ == "int") {
+				else if (val_ == "main" && typeo_ == "void") {
 					gl();
 					if (val_ == "(") {
 						gl();
