@@ -135,6 +135,7 @@ void Syntactical::stack_clear() {
 
 void Syntactical::Program() {
 	while (true) {
+		params_.clear();
 		gl();
 		if (val_ == "fun") {
 			gl();
