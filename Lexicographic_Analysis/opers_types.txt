@@ -1,4 +1,4 @@
-30 4
+32 6
 + int int char bool float : int
 + char int bool float char : int
 + string string char : string
@@ -134,13 +134,13 @@
 ! string 0
 ! bool 0
 ! float 0
-++ int 1 void
-++ char 1 void
+++ int 1 int
+++ char 1 char
 ++ string 0
 ++ bool 0
 ++ float 0
--- int 1 void
--- char 1 void
+-- int 1 int
+-- char 1 char
 -- string 0
 -- bool 0
 -- float 0
@@ -149,3 +149,13 @@ not char 1 bool
 not string 1 bool
 not bool 1 bool
 not float 1 bool
+~ int 1 int
+~ char 1 char
+~ string 0
+~ bool 0
+~ float 1 float
+_ int 1 int
+_ char 1 char
+_ string 0
+_ bool 0
+_ float 1 float

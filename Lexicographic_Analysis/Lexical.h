@@ -37,6 +37,7 @@ public:
 	void low();
 	int get_index();
 	void set_index(int);
+	void set_val(std::string);
 
 	int index = -1;
 	std::vector<Lex> lexems; // input code splitted on lexems

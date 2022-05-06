@@ -52,7 +52,6 @@ ExpChecker::ExpChecker() {
 }
 
 std::string ExpChecker::check_op(std::string sign, std::string op1, std::string op2) {
-	// need to different a[100][100][100] = {...} and a += b[1][2][i]
 	if (bin_ops_[sign][op1][op2] == "none") {
 		throw ErrorSemant("unexpected operands"); // unexpected operands
 	}

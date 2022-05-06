@@ -15,7 +15,7 @@ Syntactical::Syntactical(Lexical* lex)
 	try {
 		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<",
 			"**", "<=", ">=", "==", "+=", "-=", "*=", "/=",
-			"|=", "%=", "^=", "&&", "||", "|", "&&", "=", "!=", "not"};
+			"|=", "%=", "^=", "&&", "||", "|", "&&", "=", "!=", "not", "_", "~"};
 		std::set<std::string> types = { "int", "string", "bool", "char", "float", "void" };
 		oper_ = new TIDOperator();
 		oper_->cur = new Local_TID(nullptr);
@@ -70,7 +70,7 @@ void Syntactical::check_op(int ch) {
 		push(ret, op2.index, op2.call);
 		return;
 	}
-	if (sign.type != "++" && sign.type != "--" && sign.type != "!" && sign.type != "not") {
+	if (sign.type != "++" && sign.type != "--" && sign.type != "!" && sign.type != "not" && sign.type != "_" && sign.type != "~") {
 		Type op1 = pop();
 		if (op1.index != op2.index || op1.call != op2.call) {
 			push(op1.type, op1.index, op1.call);
@@ -122,6 +122,10 @@ void Syntactical::gl() {
 void Syntactical::low(int cnt = 1) {
 	for (int i = 0; i < cnt; ++i)
 		lex_->low();
+}
+
+void Syntactical::set_val(std::string new_val) {
+	lex_->set_val(new_val);
 }
 
 void Syntactical::clear() {
@@ -224,6 +228,7 @@ void Syntactical::Declaration() {
 		decl_ = 0;
 		gl();
 		if (val_ == ";") {
+			stack_clear();
 			return;
 		}
 		else {
@@ -231,6 +236,7 @@ void Syntactical::Declaration() {
 				throw  ErrorSynt(lexem_.str_number, val_, ", or ;"); // expected "," || ";"
 			}
 			while (val_ == ",") {
+				stack_clear();
 				Section();
 				decl_ = 0;
 				gl();
@@ -546,6 +552,7 @@ void Syntactical::DoWhile() {
 			if (val_ == ")") {
 				gl();
 				if (val_ == ";") {
+					stack_clear();
 					return;
 				}
 				else {
@@ -671,7 +678,7 @@ void Syntactical::Parameters(std::vector<std::pair<std::string, std::string> >& 
 		gl();
 		if (val_ == ",") {
 			gl();
-			if (type_ != 2 && type_ != 3 && val_ != "{") {
+			if (type_ != 2 && type_ != 3 && val_ != "{" && val_ != "~" && val_ != "_") {
 				throw  ErrorSynt(lexem_.str_number, val_, "identificator or value"); // expected variable or value
 			}
 		}
@@ -712,6 +719,7 @@ void Syntactical::DecFuncParameters() {
 		}
 		params_.push_back(std::make_pair(typev_, namev_));
 		if (val_ == ",") {
+			stack_clear();
 			gl();
 		}
 	}
@@ -838,6 +846,32 @@ bool Syntactical::Priority3(std::string st) {
 	}
 }
 
+bool Syntactical::PriorityNot(std::string st) {
+	if (st == "not") {
+		if (stack_.size() && stack_.back().type != "not" || !stack_.size()) {
+			push(st, index_, call_);
+		}
+		return true;
+	}
+	else if (st == "_" || st == "~") {
+		push(st, index_, call_);
+		return true;
+	}
+	/*else if ((st == "-" || st == "+")) {
+		low();
+		if (type_ != 8 || stack_.empty()) {
+			gl();
+			push(st == "-" ? "_" : "~", index_, call_);
+			set_val(st == "-" ? "_" : "~");
+			return true;
+		}
+		return false;
+	}*/
+	else {
+		return false;
+	}
+}
+
 bool Syntactical::Priority4(std::string st) {
 	if (st == "*" || st == "/" || st == "%" || st == "$") {
 		push(st, index_, call_);
@@ -909,16 +943,6 @@ bool Syntactical::Priority10(std::string st) {
 	}
 }
 
-bool Syntactical::PriorityNot(std::string st) {
-	if (st == "not") {
-		if (stack_.size() && stack_.back().type != "not" || !stack_.size())
-			push(st, index_, call_);
-		return true;
-	}
-	else {
-		return false;
-	}
-}
 
 void Syntactical::Atom1() { //DONE
 	gl();
@@ -1111,7 +1135,7 @@ void Syntactical::Stopper() {
 		}
 		low();
 		if (oper_->cur->func_type_ == "void") {
-			stack_clear();
+			stack_clear(); //is it correct?
 			return;
 		}
 		gl();

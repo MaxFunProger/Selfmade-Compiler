@@ -188,6 +188,20 @@ Lexical::Lexical() {
 		}
 	}
 	std::cout << "Lexems: OK\n";
+	for (int i = 0; i < lexems.size(); ++i) { // unary + and - check
+		if (i == 0) {
+			if (lexems[i].val == "+" || lexems[i].val == "-") {
+				lexems[i].val = lexems[i].val == "-" ? "_" : "~";
+			}
+		}
+		else {
+			if (lexems[i].val == "+" || lexems[i].val == "-") {
+				if (lexems[i - 1].val == ";" || lexems[i - 1].val == "," || lexems[i - 1].val == "}") {
+					lexems[i].val = lexems[i].val == "-" ? "_" : "~";
+				}
+			}
+		}
+	}
 }
 
 Lex Lexical::get_lex() {
@@ -208,4 +222,8 @@ int Lexical::get_index() {
 
 void Lexical::set_index(int ind) {
 	index = ind;
+}
+
+void Lexical::set_val(std::string new_val) {
+	lexems[index].val = new_val;
 }

@@ -77,6 +77,7 @@ private:
 	Lex lexem_;
 	void gl();
 	void low(int);
+	void set_val(std::string);
 	int& type_;
 	std::string& val_;
 	TIDOperator* oper_;

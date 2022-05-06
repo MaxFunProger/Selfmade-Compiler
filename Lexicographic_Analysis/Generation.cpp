@@ -14,9 +14,13 @@ void Generation::Generator() {
 }
 
 void Generation::print() {
+	std::ofstream file("rpn.txt");
+	file << result.size() << "\n";
 	for (auto& x : result) {
-		std::cout << x.val_ << " " << x.is_operator_ << "\n";
+		file << x.val_ << " " << x.is_operator_ << "\n";
+		//std::cout << x.val_ << " " << x.is_operator_ << "\n";
 	}
+	file.close();
 }
 
 void Generation::add_to_result(Atom a) {

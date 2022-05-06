@@ -77,6 +77,6 @@ public:
 
 	std::string get_type_var(std::string);
 
-	std::string get_type_func(std::string); // do not use because in finds just using name (no overload)
+	std::string get_type_func(std::string); // do not use because it finds just using name (no overload)
 	Local_TID* cur;
 };

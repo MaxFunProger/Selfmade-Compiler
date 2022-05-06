@@ -1,5 +1,6 @@
 #pragma once
 #include "Lexical.h"
+#include <fstream>
 
 struct Atom
 {

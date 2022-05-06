@@ -1,50 +1,14 @@
-string s;
-string tt[100][100];
-
-int a[2][2];
-int testst[2][2] = {{1}, {1}};
-fun int[][] arr(char cc[][]){
-	return {{1}};
+//int txt[10] = {1, 1, 1, -1};
+int a = 1;
+fun int kek(int a, int b) {
+	return a + b + 1;
 }
 
-fun int tttt(int a[][], string s){
-	tttt(a, 'a');
-	return true;
-}
-
-fun int func(){
-	int a[10][10] = {{1, 2}, {1}};
-	int b = 'g' + 1;
-	return 1;
-}
-
-fun int[][] kk(){
-	int a[10][10];
+fun int lol(int a) {
 	return a;
 }
 
-fun string lol(string sr){
-	string s = '1', se = '2', st = "we";
-	s = lol(s[s[0]]) * 2;
-	s = s + se * ('1' + s[0]);
-	//int b = {1};
-	return tt[1][1];
-}
-
-fun int test(){	return 's';}
-int true_ = 1;
-
 fun void main(){
-	a[1][1] = 1;
-	arr({{'1'}, {'1'}});
-	cinout >> true_ << test() >> true_;
-	int b, c = true;
-	string s;
-	s = lol(s) * 41 + lol(lol(lol(s + s[test()])));
-	b = not(lol(s[0]) * 41 + lol(s[1]) + lol(s));
-	//b = 1.0 + 5;
-	b = not( not not(1 + not'a') + not(lol(s[0]) * 41 + lol(s[1]) + lol(s))) * true;
-	//b += 10 * 15 * lol(s);
-	false + 1 - 'a';
-	false + 1;
+	int a = (1 + 2 + 3) * 4;
+	a = kek(kek(a + 1, 5), +1);
 }
