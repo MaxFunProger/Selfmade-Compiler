@@ -14,7 +14,6 @@ struct TID {
 	TID* next;
 	TID* prev;
 
-	std::map<std::string, bool> is_visible_;
 	std::map<std::string, std::string> var_type_; // get type by name
 
 	std::map<std::string, int> var_int_; // name -> int value
@@ -47,16 +46,35 @@ public:
 	void Del_TID();
 	void Up_TID();
 	void Down_TID();
-	TID* Find_Var_TID(std::string);
+	TID* Find_Var_TID(std::string); // returns the address of the variable (TID)
+	std::string Get_Var_Type(std::string); // get type by name
 	TID* Find_Func_TID(std::string);
+	void Add_Var_Int(std::string, std::string, int = 0); // type name value
+	void Add_Var_Bool(std::string, std::string, bool = false); // type name value
+	void Add_Var_Char(std::string, std::string, char = NULL); // type name value
+	void Add_Var_String(std::string, std::string, std::string = ""); // type name value
+	void Add_Var_Float(std::string, std::string, double = 0.0); // type name value
+	int Get_Var_Int(std::string);
+	bool Get_Var_Bool(std::string);
+	char Get_Var_Char(std::string);
+	std::string Get_Var_String(std::string);
+	double Get_Var_Float(std::string);
+	void Add_Func();
+
+	// rpn functions
+
+	void Operate();
 	
 
 private:
 	std::vector<Atom> rpn_;
 	int cnt_;
-	int size_;
+	int size_; // total rpn size
+	std::string val_;
+	bool is_op_;
 	std::vector<std::string> all_types_;
-	TID* CTID_, *FTID_;
-
+	TID* CTID_, *FTID_, *LTID;
+	std::vector<std::string> exstack_;
+	std::vector<int> recstack_;
 
 };
