@@ -155,6 +155,7 @@
     <Text Include="input.txt" />
     <Text Include="machine.txt" />
     <Text Include="opers_types.txt" />
+    <Text Include="output.txt" />
     <Text Include="rpn.txt" />
     <Text Include="stuff.txt" />
   </ItemGroup>

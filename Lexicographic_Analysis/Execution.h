@@ -21,12 +21,6 @@ struct TID {
 	std::map<std::string, char> var_char_; // name -> char value
 	std::map<std::string, std::string> var_string_; // name -> string value
 	std::map<std::string, double> var_float_; // name -> float value
-
-	int get_int(std::string);
-	bool get_bool(std::string);
-	char get_char(std::string);
-	std::string get_string(std::string);
-	double get_float(std::string);
 };
 
 
@@ -49,11 +43,11 @@ public:
 	TID* Find_Var_TID(std::string); // returns the address of the variable (TID)
 	std::string Get_Var_Type(std::string); // get type by name
 	TID* Find_Func_TID(std::string);
-	void Add_Var_Int(std::string, std::string, int = 0); // type name value
-	void Add_Var_Bool(std::string, std::string, bool = false); // type name value
-	void Add_Var_Char(std::string, std::string, char = NULL); // type name value
+	void Add_Var_Int(std::string, std::string, std::string = "0"); // type name value
+	void Add_Var_Bool(std::string, std::string, std::string = "false"); // type name value
+	void Add_Var_Char(std::string, std::string, std::string = " "); // type name value
 	void Add_Var_String(std::string, std::string, std::string = ""); // type name value
-	void Add_Var_Float(std::string, std::string, double = 0.0); // type name value
+	void Add_Var_Float(std::string, std::string, std::string = "0.0"); // type name value
 	int Get_Var_Int(std::string);
 	bool Get_Var_Bool(std::string);
 	char Get_Var_Char(std::string);
@@ -73,8 +67,11 @@ private:
 	std::string val_;
 	bool is_op_;
 	std::vector<std::string> all_types_;
-	TID* CTID_, *FTID_, *LTID;
-	std::vector<std::string> exstack_;
+	TID* CTID_, *FTID_, *LTID_;
+	std::vector<Atom> exstack_;
 	std::vector<int> recstack_;
+	std::ifstream file;
+	std::ifstream in;
+	std::ofstream out;
 
 };

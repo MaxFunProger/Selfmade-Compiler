@@ -1,4 +1,4 @@
-52
+71
 1 0
 a 0
 int 0
@@ -21,9 +21,28 @@ return 1
 lol 0
 int 0
 create_fun 1
-27 0
+46 0
 goto 1
 create_tid 1
+a 0
+print 1
+1 0
+1 0
+< 1
+39 0
+if_not_goto 1
+create_tid 1
+a 0
+1 0
+= 1
+clear_oparand_stack 1
+44 0
+goto 1
+create_tid 1
+a 0
+2 0
+= 1
+clear_oparand_stack 1
 a 0
 return 1
 main 0
