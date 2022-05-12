@@ -196,7 +196,7 @@ Lexical::Lexical() {
 		}
 		else {
 			if (lexems[i].val == "+" || lexems[i].val == "-") {
-				if (lexems[i - 1].val == ";" || lexems[i - 1].val == "," || lexems[i - 1].val == "}") {
+				if (lexems[i - 1].val == ";" || lexems[i - 1].val == "," || lexems[i - 1].val == "}" || lexems[i - 1].val == "=") {
 					lexems[i].val = lexems[i].val == "-" ? "_" : "~";
 				}
 			}

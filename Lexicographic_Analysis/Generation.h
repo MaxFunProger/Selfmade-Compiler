@@ -49,18 +49,19 @@ public:
 	void print();
 
 
-	void add_to_stack(Atom a);
 	void add_to_result(Atom a);
 
 	Lexical* lex_;
-	std::vector <Atom> operator_stack, result;
+	std::vector <Atom> result;
 	std::vector <Cycle> cycle_stack;
 
 	std::map <std::string, int> priority = { {"+", 6}, {"-", 6 }, {"=", 11},  {"*", 5}, {"/", 5}, {"!", 2}, {"%", 5},
 		{"^", 7}, { ">", 8 }, { "<", 8 }, {"++", 1}, {"--", 1}, {"**", 3}, { "<=", 8 }, {"not", 4},  { ">=", 8 },
 		{ "==", 8 }, { "+=", 8 },  { "-=", 11 }, { "*=", 11 }, { "/=", 11 }, { "|=", 11 }, { "%=", 11 }, { "^=", 11 },
-		{ "&&", 9}, { "||", 10 }, { "|", 7 }, {"&", 7}, { "&=", 11 }, { "!=", 7 }, {"(", 12}, {"[", 12} };
+		{ "&&", 9}, { "||", 10 }, { "|", 7 }, {"&", 7}, { "&=", 11 }, { "!=", 7 }, {"(", 12}, {"[", 12}, { "_", 4 }, {"~", 4} };
 
 	std::set <std::string> right_assoc = { "**" , "+=","-=","*=","/=", "|=", "%=", "^=", "&=", "not" };
+
+	std::map <std::string, int> func_table;
 };
 

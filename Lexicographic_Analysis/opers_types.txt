@@ -4,131 +4,131 @@
 + string string char : string
 + bool bool int char float : int
 + float int char bool float : float
-+= int int char bool float : int
-+= char int bool float char : int
-+= string string char : string
-+= bool bool int char float : int
-+= float int char bool float : float
++= int int char bool float : void
++= char int bool float char : void
++= string string char : void
++= bool bool int char float : void
++= float int char bool float : void
 - int int char bool float : int
 - char int bool float char : int
 - string : none
 - bool bool int char float : int
 - float int char bool float : float
--= int int char bool float : int
--= char int bool float char : int
+-= int int char bool float : void
+-= char int bool float char : void
 -= string : none
--= bool bool int char float : int
--= float int char bool float : float
+-= bool bool int char float : void
+-= float int char bool float : void
 * int int char bool float : int
 * char int bool float char : int
-* string int bool : string
+* string : none
 * bool bool int char float : int
 * float int char bool float : float
-*= int int char bool float : int
-*= char int bool float char : int
+*= int int char bool float : void
+*= char int bool float char : void
 *= string : none
-*= bool bool int char float : int
-*= float int char bool float : float
+*= bool bool int char float : void
+*= float int char bool float : void
 / int int char bool float : int
 / char int bool float char : int
 / string : none
 / bool bool int char float : int
 / float int char bool float : float
-/= int int char bool float : int
-/= char int bool float char : int
+/= int int char bool float : void
+/= char int bool float char : void
 /= string : none
-/= bool bool int char float : int
-/= float int char bool float : float
+/= bool bool int char float : void
+/= float int char bool float : void
 % int int bool char : int
 % char int bool char : int
 % string : none
 % bool bool int char : int
 % float : none
-%= int int bool char : int
-%= char int bool char : int
+%= int int bool char : void
+%= char int bool char : void
 %= string : none
-%= bool bool int char : int
+%= bool bool int char : void
 %= float : none
 ^ int int bool char : int
 ^ char int bool char : int
 ^ string : none
 ^ bool bool int char : int
 ^ float : none
-^= int int bool char : int
-^= char int bool char : int
+^= int int bool char : void
+^= char int bool char : void
 ^= string : none
-^= bool bool int char : int
+^= bool bool int char : void
 ^= float : none
 & int int bool char : int
 & char int bool char : int
 & string : none
 & bool bool int char : int
 & float : none
-&= int int bool char : int
-&= char int bool char : int
+&= int int bool char : void
+&= char int bool char : void
 &= string : none
-&= bool bool int char : int
+&= bool bool int char : void
 &= float : none
 | int int bool char : int
 | char int bool char : int
 | string : none
 | bool bool int char : int
 | float : none
-|= int int bool char : int
-|= char int bool char : int
+|= int int bool char : void
+|= char int bool char : void
 |= string : none
-|= bool bool int char : int
+|= bool bool int char : void
 |= float : none
-** int int bool char float : int
-** char : int
+** int int char : int
+** char int char : int
 ** string : none
 ** bool : none
-** float int bool char float : float
+** float int char : float
 = int int bool char : void
 = char int char : void
 = string string char : void
 = bool bool int char float : void
 = float int bool char float : void
 > int int bool char float : bool
-> char int char : bool
+> char int char string : bool
 > string string char : bool
 > bool bool int char float : bool
 > float int bool char float : bool
 >= int int bool char float : bool
->= char int char : bool
+>= char int char string : bool
 >= string string char : bool
 >= bool bool int char float : bool
 >= float int bool char float : bool
 < int int bool char float : bool
-< char int char : bool
+< char int char string : bool
 < string string char : bool
 < bool bool int char float : bool
 < float int bool char float : bool
 <= int int bool char float : bool
-<= char int char : bool
+<= char int char string : bool
 <= string string char : bool
 <= bool bool int char float : bool
 <= float int bool char float : bool
 == int int bool char float : bool
-== char int char : bool
+== char int char string : bool
 == string string char : bool
 == bool bool int char float : bool
 == float int bool char float : bool
 != int int bool char float : bool
-!= char int char : bool
+!= char int char string : bool
 != string string char : bool
 != bool bool int char float : bool
 != float int bool char float : bool
-&& int int bool char float string : bool
-&& char int bool char float string : bool
-&& string int bool char float string : bool
-&& bool int bool char float string : bool
-&& float int bool char float string : bool
-|| int int bool char float string : bool
-|| char int bool char float string : bool
-|| string int bool char float string : bool
-|| bool int bool char float string : bool
-|| float int bool char float string : bool
+&& int int bool float : bool
+&& char : none
+&& string : none
+&& bool int bool float : bool
+&& float int bool float : bool
+|| int int bool float : bool
+|| char : none
+|| string : none
+|| bool int bool float : bool
+|| float int bool float : bool
 ! int 1 int
 ! char 0 
 ! string 0
@@ -138,15 +138,15 @@
 ++ char 1 char
 ++ string 0
 ++ bool 0
-++ float 0
+++ float 1 float
 -- int 1 int
 -- char 1 char
 -- string 0
 -- bool 0
--- float 0
+-- float 1 float
 not int 1 bool
-not char 1 bool
-not string 1 bool
+not char 0
+not string 0
 not bool 1 bool
 not float 1 bool
 ~ int 1 int
@@ -155,7 +155,7 @@ not float 1 bool
 ~ bool 0
 ~ float 1 float
 _ int 1 int
-_ char 1 char
+_ char 1 int
 _ string 0
 _ bool 0
 _ float 1 float

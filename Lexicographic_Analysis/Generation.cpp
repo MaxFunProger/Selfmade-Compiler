@@ -16,11 +16,10 @@ void Generation::Generator() {
 void Generation::print() {
 	std::ofstream file("rpn.txt");
 	file << result.size() << "\n";
-	for (auto& x : result) {
-		file << x.val_ << " " << x.is_operator_ << "\n";
-		//std::cout << x.val_ << " " << x.is_operator_ << "\n";
+	for (int i = 0; i < result.size(); ++i) {
+		file << result[i].val_ << " " << result[i].is_operator_ << "\n";
+		//std::cout << i << ": " << result[i].val_ << " " << result[i].is_operator_ << "\n";
 	}
-	file.close();
 }
 
 void Generation::add_to_result(Atom a) {
@@ -39,6 +38,7 @@ void Generation::gen_fun() {
 		add_to_result(Atom("-1", 0));
 		add_to_result(Atom("goto", 1));
 	}
+	func_table[f_name.val_] = result.size();
 	std::vector <Atom> rev;
 	for (Lex cur = lex_->get_lex(); cur.val != ")"; cur = lex_->get_lex()) {
 		if (cur.type < 3) {
@@ -65,7 +65,7 @@ void Generation::gen_declaration() {
 		Lex sth = lex_->get_lex();
 		gen_expression();
 		if (sth.val == "(") {
-			lex_->get_lex(); // skip closing bracket
+			lex_->get_lex(); // skip )
 		}
 		add_to_result(var_name);
 		add_to_result(var_type);
@@ -261,8 +261,9 @@ void Generation::gen_for() {
 }
 
 void Generation::gen_expression() {
+	std::vector <Atom> operator_stack;
 	int balance = 0;
-	for (Lex cur = lex_->get_lex(); cur.val != ";" && cur.val != ","; cur = lex_->get_lex()) {
+	for (Lex cur = lex_->get_lex(); cur.val != ";" && cur.val != "," && cur.val != "<<" && cur.val != ">>"; cur = lex_->get_lex()) {
 		if (cur.val == ")" && balance == 0) {
 			break;
 		}
@@ -316,7 +317,9 @@ void Generation::gen_expression() {
 			do {
 				gen_expression();
 			} while (lex_->get_lex().val == ",");
-			result.push_back(Atom(cur.val, 1));
+			result.push_back(Atom(std::to_string(func_table[cur.val]), 0));
+			add_to_result(Atom("goto", 1));
+			//result.push_back(Atom(cur.val, 1));
 		}
 		else {
 			lex_->low();

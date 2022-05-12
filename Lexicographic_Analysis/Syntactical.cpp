@@ -15,7 +15,7 @@ Syntactical::Syntactical(Lexical* lex)
 	try {
 		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<",
 			"**", "<=", ">=", "==", "+=", "-=", "*=", "/=",
-			"|=", "%=", "^=", "&&", "||", "|", "&&", "=", "!=", "not", "_", "~"};
+			"|=", "%=", "^=", "&&", "||", "|", "&", "=", "!=", "not", "_", "~"};
 		std::set<std::string> types = { "int", "string", "bool", "char", "float", "void" };
 		oper_ = new TIDOperator();
 		oper_->cur = new Local_TID(nullptr);

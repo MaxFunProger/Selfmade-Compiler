@@ -2,6 +2,7 @@
 #include "Syntactical.h"
 #include "Lexical.h"
 #include "Generation.h"
+#include "Execution.h"
 
 
 
@@ -11,6 +12,7 @@ int main() {
 		Syntactical* synt = new Syntactical(lex);
 		lex->set_index(-1);
 		Generation* gen = new Generation(lex);
+		Executor* exec = new Executor();
 	}
 	catch (ErrorLex err) {
 		err.display();

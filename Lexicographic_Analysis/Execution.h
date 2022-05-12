@@ -1,5 +1,6 @@
 #pragma once
 #include "Generation.h"
+#include <math.h>
 
 
 struct TID {
@@ -26,12 +27,14 @@ struct TID {
 
 class Executor {
 public:
-	Executor(std::vector<Atom> rpn) 
-		: rpn_(rpn)
-		, cnt_(0)
-		, size_(rpn.size())
+	Executor() 
+		: cnt_(0)
+		, CTID_(nullptr)
+		, FTID_(nullptr)
+		, LTID_(nullptr)
 		, all_types_({ "int", "bool", "char", "string", "float", "void" })
 	{
+		CTID_ = nullptr;
 		Exec();
 	}
 
@@ -67,11 +70,19 @@ private:
 	std::string val_;
 	bool is_op_;
 	std::vector<std::string> all_types_;
-	TID* CTID_, *FTID_, *LTID_;
+	TID* CTID_;
+	TID* FTID_;
+	TID* LTID_;
 	std::vector<Atom> exstack_;
 	std::vector<int> recstack_;
 	std::ifstream file;
 	std::ifstream in;
 	std::ofstream out;
+	std::string parse(std::string);
+	void set_ops_uno();
+	void set_ops_bin();
+	void get_val(std::string&);
+	int factorial(int);
+	std::string op1_, op2_;
 
 };

@@ -10,6 +10,9 @@ ExpChecker::ExpChecker() {
 	int flag;
 	for (int i = 0; i < n - k; ++i) {
 		file >> sign;
+		if (sign == "&&") {
+			int a = 1;
+		}
 		for (auto& j : types_) {
 			for (auto& g : types_) {
 				bin_ops_[sign][j][g] = "none";

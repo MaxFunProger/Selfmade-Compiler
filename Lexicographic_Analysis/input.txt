@@ -1,20 +1,9 @@
-//int txt[10] = {1, 1, 1, -1};
-int a = 1;
-fun int kek(int a, int b) {
-	return a + b + 1;
-}
-
-fun int lol(int a) {
-	cinout << a;
-	if (1 < 1){
-		a = 1;
-	}else{
-		a = 2;
-	}
-	return a;
-}
-
 fun void main(){
-	int a = (1 + 2 + 3) * 4;
-	a = kek(kek(a + 1, 5), +1);
+	float a = 2**4+11 - (15&1);
+	a = 15;
+	a = -10;
+	a -= 1;
+	a *= 2;
+	a *= 0.01;
+	cinout << a << "\n" << 33;
 }
