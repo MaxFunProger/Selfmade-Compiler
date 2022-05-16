@@ -102,7 +102,7 @@ Lexical::Lexical() {
 				break;
 			}
 
-			if (text[j][i] == ' ' || text[j][i] == '\n' || text[j][i] == '\t' || text[j][i] == '\r') {
+			if (text[j][i] == ' ' && cur->trans[32] == nullptr || text[j][i] == '\n' || text[j][i] == '\t' || text[j][i] == '\r') {
 				prev = cur;
 				cur = states[0];
 				if (prev != nullptr && prev->is_terminal) {

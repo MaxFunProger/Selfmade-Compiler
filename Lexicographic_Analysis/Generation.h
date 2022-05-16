@@ -33,7 +33,7 @@ public:
 	void Generator();
 	void gen_fun();
 	void gen_declaration();
-	void gen_block();
+	void gen_block(bool is_opened);
 	void gen_expression();
 
 

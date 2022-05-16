@@ -53,15 +53,15 @@ int Executor::factorial(int a) {
 }
 
 void Executor::set_ops_bin() {
-	op2_ = exstack_.back().val_;
-	exstack_.pop_back();
-	op1_ = exstack_.back().val_;
-	exstack_.pop_back();
+	op2_ = exstack_.back().back().val_;
+	exstack_.back().pop_back();
+	op1_ = exstack_.back().back().val_;
+	exstack_.back().pop_back();
 }
 
 void Executor::set_ops_uno() {
-	op1_ = exstack_.back().val_;
-	exstack_.pop_back();
+	op1_ = exstack_.back().back().val_;
+	exstack_.back().pop_back();
 }
 
 void Executor::Add_TID() {
@@ -71,8 +71,13 @@ void Executor::Add_TID() {
 }
 
 void Executor::Del_TID() {
-	FTID_ = CTID_ = CTID_->prev;
-	delete CTID_->next;
+	if (cnt_ == size_ - 1) {
+		delete CTID_;
+	}
+	else {
+		FTID_ = CTID_ = CTID_->prev;
+		delete CTID_->next;
+	}
 }
 
 void Executor::Up_TID() {
@@ -102,6 +107,10 @@ TID* Executor::Find_Var_TID(std::string name) {
 		LTID_ = nullptr;
 		return nullptr;
 	}
+}
+
+void Executor::Add_Func(std::string type, std::string name) {
+	CTID_->funcs_[name] = Function(type, name);
 }
 
 void Executor::Add_Var_Int(std::string type, std::string name, std::string val)
@@ -164,47 +173,81 @@ std::string Executor::Get_Var_Type(std::string name) {
 	return tmp->var_type_[name];
 }
 
-/*TID* Executor::Find_Func_TID(std::string name) {
+TID* Executor::Find_Func_TID(std::string name) {
 	if (FTID_ == nullptr) {
+		FTID_ = CTID_;
+		LTID_ = nullptr;
 		return nullptr;
 	}
-	if (FTID_->is_visible_[name]) {
-		return FTID_;
-	}
-	else {
+	while (FTID_ != nullptr && FTID_->funcs_.count(name) == 0) {
 		Up_TID();
 	}
-}*/
+	if (FTID_ != nullptr) {
+		LTID_ = FTID_;
+		FTID_ = CTID_;
+		return LTID_;
+	}
+	else {
+		FTID_ = CTID_;
+		LTID_ = nullptr;
+		return nullptr;
+	}
+}
 
 
 void Executor::Operate() {
 	if (rpn_[cnt_].val_ == "create_fun") {
-		//Add_Func(); // TODO
+		std::string type = exstack_.back().back().val_;
+		exstack_.back().pop_back();
+		std::string name = exstack_.back().back().val_;
+		exstack_.back().pop_back();
+		if (name != "main") {
+			Add_Func(type, name);
+		}
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "goto") {
-		cnt_ = std::stoi(exstack_.back().val_);
-		exstack_.pop_back();
+		cnt_ = std::stoi(exstack_.back().back().val_);
+		exstack_.back().pop_back();
 	}
 	else if (rpn_[cnt_].val_ == "if_not_goto") {
-		int address = std::stoi(exstack_.back().val_);
-		exstack_.pop_back();
-		if (exstack_.back().val_ == "false") {
+		int address = std::stoi(exstack_.back().back().val_);
+		exstack_.back().pop_back();
+		if (exstack_.back().back().val_ == "false" || exstack_.back().back().val_ == "0") {
 			cnt_ = address;
 		}
 		else {
 			++cnt_;
 		}
-		exstack_.pop_back();
+		exstack_.back().pop_back();
 	}
 	else if (rpn_[cnt_].val_ == "create_var") {
-		std::string type = exstack_.back().val_;
-		exstack_.pop_back();
-		std::string name = exstack_.back().val_;
-		exstack_.pop_back();
-		if (exstack_.size() && !exstack_.back().is_operator_) {
-			std::string value = exstack_.back().val_;
-			exstack_.pop_back();
+		std::string type = exstack_.back().back().val_;
+		exstack_.back().pop_back();
+		std::string name = exstack_.back().back().val_;
+		exstack_.back().pop_back();
+		if (!params_.empty()) {
+			std::string value = params_.back();
+			params_.pop_back();
+			if (type == "int") {
+				Add_Var_Int(type, name, value);
+			}
+			else if (type == "bool") {
+				Add_Var_Bool(type, name, value);
+			}
+			else if (type == "char") {
+				Add_Var_Char(type, name, value);
+			}
+			else if (type == "string") {
+				Add_Var_String(type, name, value);
+			}
+			else if (type == "float") {
+				Add_Var_Float(type, name, value);
+			}
+		}
+		else if (exstack_.size() && !exstack_.back().back().is_operator_) {
+			std::string value = exstack_.back().back().val_;
+			exstack_.back().pop_back();
 			if (type == "int") {
 				Add_Var_Int(type, name, value);
 			}
@@ -241,18 +284,29 @@ void Executor::Operate() {
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "create_tid") {
+		exstack_.push_back({});
 		Add_TID();
 		++cnt_;
 	}
+	else if (rpn_[cnt_].val_ == "delete_tid") {
+		exstack_.pop_back();
+		Del_TID();
+		++cnt_;
+	}
 	else if (rpn_[cnt_].val_ == "clear_oparand_stack") {
-		exstack_.clear();
+		exstack_.pop_back();
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "return") {
-		// function returns smth
+		if (func_type_ != "void") {
+			std::string value = exstack_.back().back().val_;
+			exstack_[exstack_.size() - 2].push_back(Atom(value, 0));
+		}
+		cnt_ = recstack_.back();
+		recstack_.pop_back();
 	}
 	else if (rpn_[cnt_].val_ == "print") {
-		std::string val = exstack_.back().val_;
+		std::string val = exstack_.back().back().val_;
 		if (Find_Var_TID(val) != nullptr) {
 			std::string type = Get_Var_Type(val);
 			if (type == "int") {
@@ -270,7 +324,7 @@ void Executor::Operate() {
 					out << '\t';
 				}
 				else {
-					out << val;
+					out << parse(val);
 				}
 			}
 			else if (type == "bool") {
@@ -289,7 +343,6 @@ void Executor::Operate() {
 			}
 		}
 		else {
-			std::string val = exstack_.back().val_;
 			if (val == "\"\\n\"") {
 				out << '\n';
 			}
@@ -297,15 +350,15 @@ void Executor::Operate() {
 				out << '\t';
 			}
 			else {
-				out << val;
+				out << parse(val);
 			}
 		}
-		exstack_.pop_back();
+		exstack_.back().pop_back();
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "scan") {
-		std::string var = exstack_.back().val_;
-		exstack_.pop_back();
+		std::string var = exstack_.back().back().val_;
+		exstack_.back().pop_back();
 		Find_Var_TID(var);
 		if (LTID_->var_type_[var] == "int") {
 			std::cin >> LTID_->var_int_[var];
@@ -324,35 +377,53 @@ void Executor::Operate() {
 		}
 		++cnt_;
 	}
+	else if (rpn_[cnt_].val_ == "add_return_address") {
+		recstack_.push_back(std::stoi(exstack_.back().back().val_));
+		exstack_.back().pop_back();
+		++cnt_;
+	}
+	else if (rpn_[cnt_].val_ == "push_params") {
+		p_cnt_ = std::stoi(exstack_.back().back().val_);
+		exstack_.back().pop_back();
+		std::string name = exstack_.back().back().val_;
+		func_type_ = Find_Func_TID(name)->funcs_[name].type;
+		exstack_.back().pop_back();
+		for (int i = 0; i < p_cnt_; ++i) {
+			params_.push_back(exstack_.back().back().val_);
+			exstack_.back().pop_back();
+		}
+		reverse(params_.begin(), params_.end());
+		++cnt_;
+	}
 	else if (rpn_[cnt_].val_ == "+") {
 		set_ops_bin();
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] + parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] + parse(op2_)[0]), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] + std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] + std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) + std::stod(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) + std::stod(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) + std::stod(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) + std::stod(op2_)), 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) + std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) + std::stoi(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) + std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) + std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -406,30 +477,30 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] - parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] - parse(op2_)[0]), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] - std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] - std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) - std::stod(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) - std::stod(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) - std::stod(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) - std::stod(op2_)), 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) - std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) - std::stoi(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) - std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) - std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -483,30 +554,30 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] * parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] * parse(op2_)[0]), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] * std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] * std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) * std::stod(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) * std::stod(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) * std::stod(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) * std::stod(op2_)), 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) * std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) * std::stoi(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) * std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) * std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -560,7 +631,7 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
@@ -568,14 +639,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] / parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] / parse(op2_)[0]), 0));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] / std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] / std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
@@ -584,14 +655,14 @@ void Executor::Operate() {
 				if (op2 == 0.0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) / std::stod(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) / std::stod(parse(op2_))), 0));
 			}
 			else {
 				double op2 = std::stod(op2_);
 				if (op2 == 0.0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(std::stod(op1_) / std::stod(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stod(op1_) / std::stod(op2_)), 0));
 			}
 		}
 		else {
@@ -600,14 +671,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) / std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) / std::stoi(parse(op2_))), 0));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) / std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) / std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -693,7 +764,7 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
@@ -701,14 +772,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] % parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] % parse(op2_)[0]), 0));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] % std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] % std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
@@ -720,14 +791,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) % std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) % std::stoi(parse(op2_))), 0));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) % std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) % std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -800,14 +871,14 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] ^ parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] ^ parse(op2_)[0]), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] ^ std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] ^ std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
@@ -815,10 +886,10 @@ void Executor::Operate() {
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) ^ std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) ^ std::stoi(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) ^ std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) ^ std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -867,14 +938,14 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] & parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] & parse(op2_)[0]), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] & std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] & std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
@@ -882,10 +953,10 @@ void Executor::Operate() {
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) & std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) & std::stoi(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) & std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) & std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -934,14 +1005,14 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] | parse(op2_)[0]), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] | parse(op2_)[0]), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(parse(op1_)[0] | std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(parse(op1_)[0] | std::stoi(op2_)), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
@@ -949,10 +1020,10 @@ void Executor::Operate() {
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) | std::stoi(parse(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) | std::stoi(parse(op2_))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::stoi(op1_) | std::stoi(op2_)), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::stoi(op1_) | std::stoi(op2_)), 0));
 			}
 		}
 		++cnt_;
@@ -1001,30 +1072,30 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			//exstack_.push_back(Atom(parse(op1_) + parse(op2_), 0));
+			//exstack_.back().push_back(Atom(parse(op1_) + parse(op2_), 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string((int)std::pow(parse(op1_)[0], std::stoi(parse(op2_)))), 0));
+				exstack_.back().push_back(Atom(std::to_string((int)std::pow(parse(op1_)[0], std::stoi(parse(op2_)))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string((int)std::pow(parse(op1_)[0], std::stoi(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string((int)std::pow(parse(op1_)[0], std::stoi(op2_))), 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string(std::pow(parse(op1_)[0], std::stoi(parse(op2_)))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::pow(parse(op1_)[0], std::stoi(parse(op2_)))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string(std::pow(parse(op1_)[0], std::stoi(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string(std::pow(parse(op1_)[0], std::stoi(op2_))), 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::to_string((int)std::pow(std::stoi(op1_), std::stoi(parse(op2_)))), 0));
+				exstack_.back().push_back(Atom(std::to_string((int)std::pow(std::stoi(op1_), std::stoi(parse(op2_)))), 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::to_string((int)std::pow(std::stoi(op1_), std::stoi(op2_))), 0));
+				exstack_.back().push_back(Atom(std::to_string((int)std::pow(std::stoi(op1_), std::stoi(op2_))), 0));
 			}
 		}
 		++cnt_;
@@ -1078,236 +1149,231 @@ void Executor::Operate() {
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) > parse(op2_) == true ? "1" : "0", 0));
+			exstack_.back().push_back(Atom(parse(op1_) > parse(op2_) == true ? "1" : "0", 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'' || op2_[0] == '\"') {
-				exstack_.push_back(Atom(parse(op1_)[0] > parse(op2_)[0] == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] > parse(op2_)[0] == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(parse(op1_)[0] > std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] > std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stod(op1_) > std::stod(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) > std::stod(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) > std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) > std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) > std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) > std::stod(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stoi(op1_) > std::stoi(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) > std::stoi(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) > std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) > std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) > std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) > std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
 	}
-
 	else if (rpn_[cnt_].val_ == ">=") {
 		set_ops_bin();
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) >= parse(op2_) == true ? "1" : "0", 0));
+			exstack_.back().push_back(Atom(parse(op1_) >= parse(op2_) == true ? "1" : "0", 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'' || op2_[0] == '\"') {
-				exstack_.push_back(Atom(parse(op1_)[0] >= parse(op2_)[0] == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] >= parse(op2_)[0] == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(parse(op1_)[0] >= std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] >= std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stod(op1_) >= std::stod(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) >= std::stod(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) >= std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) >= std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) >= std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) >= std::stod(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stoi(op1_) >= std::stoi(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) >= std::stoi(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) >= std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) >= std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) >= std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) >= std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
 	}
-
 	else if (rpn_[cnt_].val_ == "<") {
 		set_ops_bin();
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) < parse(op2_) == true ? "1" : "0", 0));
+			exstack_.back().push_back(Atom(parse(op1_) < parse(op2_) == true ? "1" : "0", 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'' || op2_[0] == '\"') {
-				exstack_.push_back(Atom(parse(op1_)[0] < parse(op2_)[0] == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] < parse(op2_)[0] == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(parse(op1_)[0] < std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] < std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stod(op1_) < std::stod(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) < std::stod(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) < std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) < std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) < std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) < std::stod(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stoi(op1_) < std::stoi(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) < std::stoi(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) < std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) < std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) < std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) < std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
 	}
-
 	else if (rpn_[cnt_].val_ == "<=") {
 		set_ops_bin();
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) <= parse(op2_) == true ? "1" : "0", 0));
+			exstack_.back().push_back(Atom(parse(op1_) <= parse(op2_) == true ? "1" : "0", 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'' || op2_[0] == '\"') {
-				exstack_.push_back(Atom(parse(op1_)[0] <= parse(op2_)[0] == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] <= parse(op2_)[0] == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(parse(op1_)[0] <= std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] <= std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stod(op1_) <= std::stod(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) <= std::stod(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) <= std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) <= std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) <= std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) <= std::stod(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stoi(op1_) <= std::stoi(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) <= std::stoi(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) <= std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) <= std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) <= std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) <= std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
 	}
-
 	else if (rpn_[cnt_].val_ == "==") {
 		set_ops_bin();
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) == parse(op2_) == true ? "1" : "0", 0));
+			exstack_.back().push_back(Atom(parse(op1_) == parse(op2_) == true ? "1" : "0", 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'' || op2_[0] == '\"') {
-				exstack_.push_back(Atom(parse(op1_)[0] == parse(op2_)[0] == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] == parse(op2_)[0] == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(parse(op1_)[0] == std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] == std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stod(op1_) == std::stod(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) == std::stod(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) == std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) == std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) == std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) == std::stod(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stoi(op1_) == std::stoi(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) == std::stoi(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) == std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) == std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) == std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) == std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
 	}
-
 	else if (rpn_[cnt_].val_ == "!=") {
 		set_ops_bin();
 		get_val(op1_);
 		get_val(op2_);
 		if (op1_[0] == '"') {
-			exstack_.push_back(Atom(parse(op1_) != parse(op2_) == true ? "1" : "0", 0));
+			exstack_.back().push_back(Atom(parse(op1_) != parse(op2_) == true ? "1" : "0", 0));
 		}
 		else if (op1_[0] == '\'') {
 			if (op2_[0] == '\'' || op2_[0] == '\"') {
-				exstack_.push_back(Atom(parse(op1_)[0] != parse(op2_)[0] == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] != parse(op2_)[0] == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(parse(op1_)[0] != std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(parse(op1_)[0] != std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stod(op1_) != std::stod(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) != std::stod(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) != std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) != std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) != std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) != std::stod(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (op2_[0] == '\'') {
-				exstack_.push_back(Atom(std::stoi(op1_) != std::stoi(parse(op2_)) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) != std::stoi(parse(op2_)) == true ? "1" : "0", 0));
 			}
 			else if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) != std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) != std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) != std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) != std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
@@ -1324,18 +1390,18 @@ void Executor::Operate() {
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) && std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) && std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) && std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) && std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) && std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) && std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) && std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) && std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
@@ -1352,18 +1418,18 @@ void Executor::Operate() {
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
 			if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stod(op1_) || std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) || std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stod(op1_) || std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stod(op1_) || std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '.') != op2_.end()) {
-				exstack_.push_back(Atom(std::stoi(op1_) || std::stod(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) || std::stod(op2_) == true ? "1" : "0", 0));
 			}
 			else {
-				exstack_.push_back(Atom(std::stoi(op1_) || std::stoi(op2_) == true ? "1" : "0", 0));
+				exstack_.back().push_back(Atom(std::stoi(op1_) || std::stoi(op2_) == true ? "1" : "0", 0));
 			}
 		}
 		++cnt_;
@@ -1371,30 +1437,40 @@ void Executor::Operate() {
 	else if (rpn_[cnt_].val_ == "!") {
 		set_ops_uno();
 		get_val(op1_);
-		exstack_.push_back(Atom(std::to_string(factorial(std::stoi(op1_))), 0));
+		exstack_.back().push_back(Atom(std::to_string(factorial(std::stoi(op1_))), 0));
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "++") {
-		if (op1_[0] == '\'') {
-			exstack_.push_back(Atom(std::to_string(parse(op1_)[0] + 1), 0));
+		set_ops_uno();
+		if (Find_Var_TID(op1_) == nullptr) {
+			throw; // rvalue given but lvalue expected
 		}
-		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
-			exstack_.push_back(Atom(std::to_string(std::stod(op1_) + 1), 0));
+		std::string type = Get_Var_Type(op1_);
+		if (type == "char") {
+			FTID_->var_char_[op1_] += 1;
+		}
+		else if (type == "float") {
+			FTID_->var_float_[op1_] += 1;
 		}
 		else {
-			exstack_.push_back(Atom(std::to_string(std::stoi(op1_) + 1), 0));
+			FTID_->var_int_[op1_] += 1;
 		}
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "--") {
-		if (op1_[0] == '\'') {
-			exstack_.push_back(Atom(std::to_string(parse(op1_)[0] - 1), 0));
+		set_ops_uno();
+		if (Find_Var_TID(op1_) == nullptr) {
+			throw; // rvalue given but lvalue expected
 		}
-		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
-			exstack_.push_back(Atom(std::to_string(std::stod(op1_) - 1), 0));
+		std::string type = Get_Var_Type(op1_);
+		if (type == "char") {
+			FTID_->var_char_[op1_] -= 1;
+		}
+		else if (type == "float") {
+			FTID_->var_float_[op1_] -= 1;
 		}
 		else {
-			exstack_.push_back(Atom(std::to_string(std::stoi(op1_) - 1), 0));
+			FTID_->var_int_[op1_] -= 1;
 		}
 		++cnt_;
 	}
@@ -1402,10 +1478,10 @@ void Executor::Operate() {
 		set_ops_uno();
 		get_val(op1_);
 		if (!op1_.empty()) {
-			exstack_.push_back(Atom("0", 0));
+			exstack_.back().push_back(Atom("0", 0));
 		}
 		else {
-			exstack_.push_back(Atom("1", 0));
+			exstack_.back().push_back(Atom("1", 0));
 		}
 		++cnt_;
 	}
@@ -1416,13 +1492,13 @@ void Executor::Operate() {
 		set_ops_uno();
 		get_val(op1_);
 		if (op1_[0] == '\'') {
-			exstack_.push_back(Atom(std::to_string(-(int)op1_[0]), 0));
+			exstack_.back().push_back(Atom(std::to_string(-(int)op1_[0]), 0));
 		}
 		else if (find(op1_.begin(), op1_.end(), '.') != op1_.end()) {
-			exstack_.push_back(Atom(std::to_string(-std::stod(op1_)), 0));
+			exstack_.back().push_back(Atom(std::to_string(-std::stod(op1_)), 0));
 		}
 		else {
-			exstack_.push_back(Atom(std::to_string(-std::stoi(op1_)), 0));
+			exstack_.back().push_back(Atom(std::to_string(-std::stoi(op1_)), 0));
 		}
 		++cnt_;
 	}
@@ -1437,9 +1513,53 @@ void Executor::Exec() {
 	FTID_ = CTID_;
 	file.open("rpn.txt");
 	out.open("output.txt");
-	file >> size_;
+	std::string lol;
+	std::getline(file, lol);
+	size_ = std::stoi(lol);
+	std::string tmp;
 	for (int i = 0; i < size_; ++i) {
-		file >> val_ >> is_op_;
+		std::getline(file, tmp);
+		val_ = "";
+		if (tmp[0] == '\"') {
+			val_ = "\"";
+			int tmp_cnt = 1;
+			while (true) {
+				val_.push_back(tmp[tmp_cnt]);
+				if (tmp[tmp_cnt] == '\"') {
+					tmp_cnt += 2;
+					break;
+				}
+				++tmp_cnt;
+			}
+			if (tmp[tmp_cnt] == '0') {
+				is_op_ = 0;
+			}
+			else {
+				is_op_ = 1;
+			}
+		}
+		else if (tmp[0] == '\'') {
+			val_ = tmp[0];
+			val_.push_back(tmp[1]);
+			val_.push_back(tmp[2]);
+			if (tmp[4] == '0') {
+				is_op_ = 0;
+			}
+			else {
+				is_op_ = 1;
+			}
+		}
+		else {
+			for (int i = 0; i < tmp.size() - 2; ++i) {
+				val_.push_back(tmp[i]);
+			}
+			if (tmp.back() == '0') {
+				is_op_ = 0;
+			}
+			else {
+				is_op_ = 1;
+			}
+		}
 		if (val_ == "true") {
 			val_ = "1";
 		}
@@ -1449,13 +1569,16 @@ void Executor::Exec() {
 		rpn_.push_back(Atom(val_, is_op_));
 
 	}
+	exstack_.push_back({});
 	while (cnt_ < size_) {
 		if (rpn_[cnt_].is_operator_) {
 			Operate();
 		}
 		else {
-			exstack_.push_back(rpn_[cnt_]);
+			exstack_.back().push_back(rpn_[cnt_]);
 			++cnt_;
 		}
 	}
+	file.close();
+	out.close();
 }

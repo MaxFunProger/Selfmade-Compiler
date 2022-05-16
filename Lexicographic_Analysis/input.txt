@@ -1,9 +1,13 @@
+fun int kek(int a){
+	if (a == 1){
+		return 1;
+	}else{
+		return a * kek(a - 1);
+	}
+}
+
+
 fun void main(){
-	float a = 2**4+11 - (15&1);
-	a = 15;
-	a = -10;
-	a -= 1;
-	a *= 2;
-	a *= 0.01;
-	cinout << a << "\n" << 33;
+	int a = kek(3);
+	cinout << a;
 }

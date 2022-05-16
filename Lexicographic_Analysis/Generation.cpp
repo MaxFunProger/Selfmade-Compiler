@@ -38,10 +38,11 @@ void Generation::gen_fun() {
 		add_to_result(Atom("-1", 0));
 		add_to_result(Atom("goto", 1));
 	}
+	add_to_result(Atom("create_tid", 1));
 	func_table[f_name.val_] = result.size();
 	std::vector <Atom> rev;
 	for (Lex cur = lex_->get_lex(); cur.val != ")"; cur = lex_->get_lex()) {
-		if (cur.type < 3) {
+		if (cur.type < 3 || cur.type == 8) {
 			rev.push_back(Atom(cur, 0));
 		}
 	}
@@ -51,7 +52,7 @@ void Generation::gen_fun() {
 		add_to_result(rev[i]);		// type
 		add_to_result(Atom("create_var", 1));
 	}
-	gen_block();
+	gen_block(true);
 	if (!is_main) {
 		result[skip_f].val_ = std::to_string(result.size());
 	}
@@ -74,8 +75,10 @@ void Generation::gen_declaration() {
 	}
 }
 
-void Generation::gen_block() {
-	add_to_result(Atom("create_tid", 1));
+void Generation::gen_block(bool is_opened = false) {
+	if (!is_opened) {
+		add_to_result(Atom("create_tid", 1));
+	}
 	lex_->get_lex(); // skip {
 	Lex cur = lex_->get_lex();
 	while (cur.val != "}") {
@@ -115,6 +118,7 @@ void Generation::gen_block() {
 		}
 		cur = lex_->get_lex();
 	}
+	add_to_result(Atom("delete_tid", 1));
 }
 
 void Generation::gen_return() {
@@ -216,6 +220,7 @@ void Generation::gen_dowhile() {
 }
 
 void Generation::gen_for() {
+	add_to_result(Atom("create_tid", 1));
 	lex_->get_lex(); // skip (
 	if (lex_->get_lex().type == 8) {
 		lex_->low();
@@ -258,6 +263,7 @@ void Generation::gen_for() {
 		result[x].val_ = std::to_string(result.size());
 	}
 	cycle_stack.pop_back();
+	add_to_result(Atom("delete_tid", 1));
 }
 
 void Generation::gen_expression() {
@@ -314,9 +320,16 @@ void Generation::gen_expression() {
 			continue;
 		}
 		if (lex_->get_lex().val == "(") {
+			int cnt = 0;
 			do {
+				++cnt;
 				gen_expression();
 			} while (lex_->get_lex().val == ",");
+			result.push_back(Atom(cur.val, 0));
+			result.push_back(Atom(std::to_string(cnt), 0));
+			add_to_result(Atom("push_params", 1));
+			result.push_back(Atom(std::to_string(result.size() + 4), 0));
+			add_to_result(Atom("add_return_address", 1));
 			result.push_back(Atom(std::to_string(func_table[cur.val]), 0));
 			add_to_result(Atom("goto", 1));
 			//result.push_back(Atom(cur.val, 1));

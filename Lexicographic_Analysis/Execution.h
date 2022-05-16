@@ -3,6 +3,22 @@
 #include <math.h>
 
 
+struct Function {
+	Function() = default;
+	Function(std::string type, std::string name, int params = 0) 
+		: name(name)
+		, type(type)
+		, params_cnt(params)
+	{
+	
+	}
+	
+
+	std::string type, name;
+	std::vector<std::string> params;
+	int params_cnt;
+};
+
 struct TID {
 	TID() = default;
 	TID(TID* parent) 
@@ -15,6 +31,7 @@ struct TID {
 	TID* next;
 	TID* prev;
 
+	std::map<std::string, Function> funcs_;
 	std::map<std::string, std::string> var_type_; // get type by name
 
 	std::map<std::string, int> var_int_; // name -> int value
@@ -56,7 +73,7 @@ public:
 	char Get_Var_Char(std::string);
 	std::string Get_Var_String(std::string);
 	double Get_Var_Float(std::string);
-	void Add_Func();
+	void Add_Func(std::string, std::string);
 
 	// rpn functions
 
@@ -73,7 +90,7 @@ private:
 	TID* CTID_;
 	TID* FTID_;
 	TID* LTID_;
-	std::vector<Atom> exstack_;
+	std::vector<std::vector<Atom> > exstack_;
 	std::vector<int> recstack_;
 	std::ifstream file;
 	std::ifstream in;
@@ -84,5 +101,8 @@ private:
 	void get_val(std::string&);
 	int factorial(int);
 	std::string op1_, op2_;
+	int p_cnt_; // how many params func has
+	std::vector<std::string> params_;
+	std::string func_type_;	// type of the last func
 
 };
