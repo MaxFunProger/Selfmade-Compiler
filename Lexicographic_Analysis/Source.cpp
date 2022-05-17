@@ -14,11 +14,21 @@ int main() {
 		Generation* gen = new Generation(lex);
 		Executor* exec = new Executor();
 	}
+	catch (ErrorSynt err) {
+		err.display();
+		return 0;
+	}
+	catch (ErrorSemant err) {
+		err.display();
+		return 0;
+	}
 	catch (ErrorLex err) {
 		err.display();
+		return 0;
 	}
 	catch (...) {
 		std::cout << "Unexpected situation\n";
+		return 0;
 	}
 
 

@@ -15,7 +15,7 @@ Syntactical::Syntactical(Lexical* lex)
 	try {
 		ops_ = { "+", "-", "=", "*", "/", "%", "^", ">", "<",
 			"**", "<=", ">=", "==", "+=", "-=", "*=", "/=",
-			"|=", "%=", "^=", "&&", "||", "|", "&", "=", "!=", "not", "_", "~", "++", "--"};
+			"|=", "%=", "^=", "&&", "||", "|", "&", "=", "!=", "not", "_", "~", "++", "--" };
 		std::set<std::string> types = { "int", "string", "bool", "char", "float", "void" };
 		oper_ = new TIDOperator();
 		oper_->cur = new Local_TID(nullptr);
@@ -37,20 +37,14 @@ Syntactical::Syntactical(Lexical* lex)
 			}
 		}
 		Program();
-		std::cout << "Syntax: OK" << "\n";
-	}
-	catch (ErrorSynt err) {
-		err.display();
 	}
 	catch (ErrorSemant err) {
 		if (err.get_line_number() == -1) {
 			err.set_line_number(lexem_.str_number);
 		}
-		err.display();
+		throw err;
 	}
-	catch (...) {
-		std::cout << "Unexpected behaviour\n";
-	}
+	std::cout << "Syntax: OK" << "\n";
 }
 
 void Syntactical::check_op(int ch) {
