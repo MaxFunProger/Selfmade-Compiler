@@ -19,6 +19,18 @@ struct Function {
 	int params_cnt;
 };
 
+struct Rec {
+	Rec() = default;
+	Rec(int where, int tids = 0)
+		: where(where)
+		, tids(tids) 
+	{
+
+	}
+
+	int where, tids; // where goto while return and how many tids need to delete
+};
+
 struct TID {
 	TID() = default;
 	TID(TID* parent) 
@@ -91,7 +103,7 @@ private:
 	TID* FTID_;
 	TID* LTID_;
 	std::vector<std::vector<Atom> > exstack_;
-	std::vector<int> recstack_;
+	std::vector<Rec> recstack_;
 	std::ifstream file;
 	std::ifstream in;
 	std::ofstream out;

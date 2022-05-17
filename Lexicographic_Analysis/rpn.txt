@@ -29,7 +29,7 @@ kek 0
 push_params 1
 32 0
 add_return_address 1
-6 0
+5 0
 goto 1
 * 1
 return 1
@@ -45,7 +45,7 @@ kek 0
 push_params 1
 48 0
 add_return_address 1
-6 0
+5 0
 goto 1
 a 0
 int 0

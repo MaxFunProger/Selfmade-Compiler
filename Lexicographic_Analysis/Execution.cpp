@@ -75,8 +75,10 @@ void Executor::Del_TID() {
 		delete CTID_;
 	}
 	else {
-		FTID_ = CTID_ = CTID_->prev;
-		delete CTID_->next;
+		FTID_ = CTID_->prev;
+		delete CTID_;
+		CTID_ = FTID_;
+		CTID_->next = nullptr;
 	}
 }
 
@@ -284,13 +286,17 @@ void Executor::Operate() {
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "create_tid") {
-		exstack_.push_back({});
 		Add_TID();
+		if (!recstack_.empty()) {
+			++recstack_.back().tids;
+		}
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "delete_tid") {
-		exstack_.pop_back();
 		Del_TID();
+		if (!recstack_.empty()) {
+			--recstack_.back().tids;
+		}
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "clear_oparand_stack") {
@@ -302,7 +308,12 @@ void Executor::Operate() {
 			std::string value = exstack_.back().back().val_;
 			exstack_[exstack_.size() - 2].push_back(Atom(value, 0));
 		}
-		cnt_ = recstack_.back();
+		cnt_ = recstack_.back().where;
+		exstack_.pop_back();
+		while (recstack_.back().tids) {
+			Del_TID();
+			--recstack_.back().tids;
+		}
 		recstack_.pop_back();
 	}
 	else if (rpn_[cnt_].val_ == "print") {
@@ -378,7 +389,7 @@ void Executor::Operate() {
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "add_return_address") {
-		recstack_.push_back(std::stoi(exstack_.back().back().val_));
+		recstack_.push_back(Rec(std::stoi(exstack_.back().back().val_), 0));
 		exstack_.back().pop_back();
 		++cnt_;
 	}
@@ -393,6 +404,7 @@ void Executor::Operate() {
 			exstack_.back().pop_back();
 		}
 		reverse(params_.begin(), params_.end());
+		exstack_.push_back({});
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "+") {

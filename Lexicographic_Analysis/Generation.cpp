@@ -38,8 +38,8 @@ void Generation::gen_fun() {
 		add_to_result(Atom("-1", 0));
 		add_to_result(Atom("goto", 1));
 	}
-	add_to_result(Atom("create_tid", 1));
 	func_table[f_name.val_] = result.size();
+	add_to_result(Atom("create_tid", 1));
 	std::vector <Atom> rev;
 	for (Lex cur = lex_->get_lex(); cur.val != ")"; cur = lex_->get_lex()) {
 		if (cur.type < 3 || cur.type == 8) {
@@ -321,10 +321,13 @@ void Generation::gen_expression() {
 		}
 		if (lex_->get_lex().val == "(") {
 			int cnt = 0;
-			do {
-				++cnt;
-				gen_expression();
-			} while (lex_->get_lex().val == ",");
+			if (lex_->get_lex().val != ")") {
+				lex_->low();
+				do {
+					++cnt;
+					gen_expression();
+				} while (lex_->get_lex().val == ",");
+			}
 			result.push_back(Atom(cur.val, 0));
 			result.push_back(Atom(std::to_string(cnt), 0));
 			add_to_result(Atom("push_params", 1));
