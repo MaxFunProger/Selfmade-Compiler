@@ -2,6 +2,9 @@
 
 
 std::string Executor::parse(std::string str) {
+	if (str[0] != '\'' && str[0] != '\"') {
+		return str;
+	}
 	str.pop_back();
 	reverse(str.begin(), str.end());
 	str.pop_back();
@@ -300,7 +303,7 @@ void Executor::Operate() {
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "clear_oparand_stack") {
-		exstack_.pop_back();
+		exstack_.back().clear();
 		++cnt_;
 	}
 	else if (rpn_[cnt_].val_ == "return") {
@@ -448,38 +451,38 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			FTID_->var_string_[op1_] += parse(op2_);
+			LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] += parse(op2_)[0];
+				LTID_->var_char_[op1_] += parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] += std::stoi(op2_);
+				LTID_->var_char_[op1_] += std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_float_[op1_] += std::stod(parse(op2_));
+				LTID_->var_float_[op1_] += std::stod(parse(op2_));
 			}
 			else {
-				FTID_->var_float_[op1_] += std::stod(op2_);
+				LTID_->var_float_[op1_] += std::stod(op2_);
 			}
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] += std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] += std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] += std::stoi(op2_);
+				LTID_->var_bool_[op1_] += std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] += std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] += std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] += std::stoi(op2_);
+				LTID_->var_int_[op1_] += std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -525,38 +528,38 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] -= parse(op2_)[0];
+				LTID_->var_char_[op1_] -= parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] -= std::stoi(op2_);
+				LTID_->var_char_[op1_] -= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_float_[op1_] -= std::stod(parse(op2_));
+				LTID_->var_float_[op1_] -= std::stod(parse(op2_));
 			}
 			else {
-				FTID_->var_float_[op1_] -= std::stod(op2_);
+				LTID_->var_float_[op1_] -= std::stod(op2_);
 			}
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] -= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] -= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] -= std::stoi(op2_);
+				LTID_->var_bool_[op1_] -= std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] -= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] -= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] -= std::stoi(op2_);
+				LTID_->var_int_[op1_] -= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -602,38 +605,38 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] *= parse(op2_)[0];
+				LTID_->var_char_[op1_] *= parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] *= std::stoi(op2_);
+				LTID_->var_char_[op1_] *= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_float_[op1_] *= std::stod(parse(op2_));
+				LTID_->var_float_[op1_] *= std::stod(parse(op2_));
 			}
 			else {
-				FTID_->var_float_[op1_] *= std::stod(op2_);
+				LTID_->var_float_[op1_] *= std::stod(op2_);
 			}
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] *= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] *= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] *= std::stoi(op2_);
+				LTID_->var_bool_[op1_] *= std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] *= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] *= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] *= std::stoi(op2_);
+				LTID_->var_int_[op1_] *= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -703,7 +706,7 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
@@ -711,14 +714,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_char_[op1_] /= parse(op2_)[0];
+				LTID_->var_char_[op1_] /= parse(op2_)[0];
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_char_[op1_] /= std::stoi(op2_);
+				LTID_->var_char_[op1_] /= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
@@ -727,14 +730,14 @@ void Executor::Operate() {
 				if (op2 == 0.0) {
 					throw; // division by 0
 				}
-				FTID_->var_float_[op1_] /= std::stod(parse(op2_));
+				LTID_->var_float_[op1_] /= std::stod(parse(op2_));
 			}
 			else {
 				double op2 = std::stod(op2_);
 				if (op2 == 0.0) {
 					throw; // division by 0
 				}
-				FTID_->var_float_[op1_] /= std::stod(op2_);
+				LTID_->var_float_[op1_] /= std::stod(op2_);
 			}
 		}
 		else if (type == "bool") {
@@ -743,14 +746,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_bool_[op1_] /= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] /= std::stoi(parse(op2_));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_bool_[op1_] /= std::stoi(op2_);
+				LTID_->var_bool_[op1_] /= std::stoi(op2_);
 			}
 		}
 		else {
@@ -759,14 +762,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_int_[op1_] /= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] /= std::stoi(parse(op2_));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_int_[op1_] /= std::stoi(op2_);
+				LTID_->var_int_[op1_] /= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -823,7 +826,7 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
@@ -831,14 +834,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_char_[op1_] %= parse(op2_)[0];
+				LTID_->var_char_[op1_] %= parse(op2_)[0];
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_char_[op1_] %= std::stoi(op2_);
+				LTID_->var_char_[op1_] %= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
@@ -850,14 +853,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_bool_[op1_] %= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] %= std::stoi(parse(op2_));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_bool_[op1_] %= std::stoi(op2_);
+				LTID_->var_bool_[op1_] %= std::stoi(op2_);
 			}
 		}
 		else {
@@ -866,14 +869,14 @@ void Executor::Operate() {
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_int_[op1_] %= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] %= std::stoi(parse(op2_));
 			}
 			else {
 				int op2 = std::stoi(op2_);
 				if (op2 == 0) {
 					throw; // division by 0
 				}
-				FTID_->var_int_[op1_] %= std::stoi(op2_);
+				LTID_->var_int_[op1_] %= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -914,14 +917,14 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] ^= parse(op2_)[0];
+				LTID_->var_char_[op1_] ^= parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] ^= std::stoi(op2_);
+				LTID_->var_char_[op1_] ^= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
@@ -929,18 +932,18 @@ void Executor::Operate() {
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] ^= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] ^= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] ^= std::stoi(op2_);
+				LTID_->var_bool_[op1_] ^= std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] ^= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] ^= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] ^= std::stoi(op2_);
+				LTID_->var_int_[op1_] ^= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -981,14 +984,14 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] &= parse(op2_)[0];
+				LTID_->var_char_[op1_] &= parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] &= std::stoi(op2_);
+				LTID_->var_char_[op1_] &= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
@@ -996,18 +999,18 @@ void Executor::Operate() {
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] &= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] &= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] &= std::stoi(op2_);
+				LTID_->var_bool_[op1_] &= std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] &= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] &= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] &= std::stoi(op2_);
+				LTID_->var_int_[op1_] &= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -1048,14 +1051,14 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			//FTID_->var_string_[op1_] += parse(op2_);
+			//LTID_->var_string_[op1_] += parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] |= parse(op2_)[0];
+				LTID_->var_char_[op1_] |= parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] |= std::stoi(op2_);
+				LTID_->var_char_[op1_] |= std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
@@ -1063,18 +1066,18 @@ void Executor::Operate() {
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] |= std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] |= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] |= std::stoi(op2_);
+				LTID_->var_bool_[op1_] |= std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] |= std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] |= std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] |= std::stoi(op2_);
+				LTID_->var_int_[op1_] |= std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -1120,38 +1123,38 @@ void Executor::Operate() {
 		get_val(op2_);
 		std::string type = Get_Var_Type(op1_);
 		if (type == "string") {
-			FTID_->var_string_[op1_] = parse(op2_);
+			LTID_->var_string_[op1_] = parse(op2_);
 		}
 		else if (type == "char") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_char_[op1_] = parse(op2_)[0];
+				LTID_->var_char_[op1_] = parse(op2_)[0];
 			}
 			else {
-				FTID_->var_char_[op1_] = std::stoi(op2_);
+				LTID_->var_char_[op1_] = std::stoi(op2_);
 			}
 		}
 		else if (type == "float") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_float_[op1_] = std::stod(parse(op2_));
+				LTID_->var_float_[op1_] = std::stod(parse(op2_));
 			}
 			else {
-				FTID_->var_float_[op1_] = std::stod(op2_);
+				LTID_->var_float_[op1_] = std::stod(op2_);
 			}
 		}
 		else if (type == "bool") {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_bool_[op1_] = (bool)std::stoi(parse(op2_));
+				LTID_->var_bool_[op1_] = (bool)std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_bool_[op1_] = (bool)std::stoi(op2_);
+				LTID_->var_bool_[op1_] = (bool)std::stoi(op2_);
 			}
 		}
 		else {
 			if (find(op2_.begin(), op2_.end(), '\'') != op2_.end()) {
-				FTID_->var_int_[op1_] = std::stoi(parse(op2_));
+				LTID_->var_int_[op1_] = std::stoi(parse(op2_));
 			}
 			else {
-				FTID_->var_int_[op1_] = std::stoi(op2_);
+				LTID_->var_int_[op1_] = std::stoi(op2_);
 			}
 		}
 		++cnt_;
@@ -1459,13 +1462,13 @@ void Executor::Operate() {
 		}
 		std::string type = Get_Var_Type(op1_);
 		if (type == "char") {
-			FTID_->var_char_[op1_] += 1;
+			LTID_->var_char_[op1_] += 1;
 		}
 		else if (type == "float") {
-			FTID_->var_float_[op1_] += 1;
+			LTID_->var_float_[op1_] += 1;
 		}
 		else {
-			FTID_->var_int_[op1_] += 1;
+			LTID_->var_int_[op1_] += 1;
 		}
 		++cnt_;
 	}
@@ -1476,13 +1479,13 @@ void Executor::Operate() {
 		}
 		std::string type = Get_Var_Type(op1_);
 		if (type == "char") {
-			FTID_->var_char_[op1_] -= 1;
+			LTID_->var_char_[op1_] -= 1;
 		}
 		else if (type == "float") {
-			FTID_->var_float_[op1_] -= 1;
+			LTID_->var_float_[op1_] -= 1;
 		}
 		else {
-			FTID_->var_int_[op1_] -= 1;
+			LTID_->var_int_[op1_] -= 1;
 		}
 		++cnt_;
 	}

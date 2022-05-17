@@ -17,6 +17,6 @@ fun int kek(int a){
 
 
 fun void main(){
-	int a = kek(1) * kek2(3 + 1);
-	cinout << a;
+	//int a = kek(1) * kek2(3 + 1);
+	cinout << 1;
 }
