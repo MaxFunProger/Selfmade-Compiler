@@ -308,6 +308,7 @@ void Executor::Operate() {
 	}
 	else if (rpn_[cnt_].val_ == "return") {
 		if (func_type_ != "void") {
+			get_val(exstack_.back().back().val_);
 			std::string value = exstack_.back().back().val_;
 			exstack_[exstack_.size() - 2].push_back(Atom(value, 0));
 		}
@@ -403,6 +404,7 @@ void Executor::Operate() {
 		func_type_ = Find_Func_TID(name)->funcs_[name].type;
 		exstack_.back().pop_back();
 		for (int i = 0; i < p_cnt_; ++i) {
+			get_val(exstack_.back().back().val_);
 			params_.push_back(exstack_.back().back().val_);
 			exstack_.back().pop_back();
 		}
